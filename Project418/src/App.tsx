@@ -4,8 +4,46 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      console.log('File selected:', file.name)
+    }
+  }
+
+  const handleTurnInClick = () => {
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement
+    fileInput?.click()
+  }
+
+  return (
+    <div className="container">
+      <h1>Paper Submission Portal</h1>
+      <button className="submit-btn" onClick={handleTurnInClick}>
+        Turn paper in here
+      </button>
+      
+      <input
+      id="fileInput"
+      type="file"
+      onChange={handleFileChange}
+      style={{ display: 'none'}}
+      accept = ".pdf, .doc, .docx, .txt"
+    />
+
+    {selectedFile && (
+      <p className="file-info">Selected: <strong>{selectedFile.name}</strong></p>
+    )}
+    </div>
+
+  )
+}
+
+
+  /*
   return (
     <>
       <div>
@@ -31,5 +69,6 @@ function App() {
     </>
   )
 }
+*/
 
 export default App
