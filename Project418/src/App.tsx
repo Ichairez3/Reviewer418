@@ -5,6 +5,8 @@ import './App.css'
 
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -17,6 +19,26 @@ function App() {
   const handleTurnInClick = () => {
     const fileInput = document.getElementById('fileInput') as HTMLInputElement
     fileInput?.click()
+  }
+
+  const handleSubmit = () => {
+    setIsVerifying(true)
+  }
+
+  const handleConfirmSubmit = () => {
+    console.log('File submitted:', selectedFile?.name)
+    setIsSubmitted(true)
+    setSelectedFile(null)
+    setIsVerifying(false)
+    setTimeout(() => setIsSubmitted(false), 3000)
+  }
+
+  const handleCancel = () => {
+    setIsVerifying(false)
+  }
+  
+  const formatFileSize = (bytes: number) => {
+    return (bytes / 1024).toFixed(2) + 'KB'
   }
 
   return (
@@ -34,9 +56,41 @@ function App() {
       accept = ".pdf, .doc, .docx, .txt"
     />
 
-    {selectedFile && (
-      <p className="file-info">Selected: <strong>{selectedFile.name}</strong></p>
+    {selectedFile && !isVerifying && (
+      <div className = "file-info-container">
+        <p className = "file-info"> Selected: <strong>{selectedFile.name}</strong></p>
+        <button className = "submit-btn" onClick={handleSubmit}>
+          submit
+        </button>
+      </div>
     )}
+    
+    {isVerifying && selectedFile && (
+      <div className="verification-screen">
+        <h2>Verify Your Submission</h2>
+        <div className="verification-details">
+          <p><strong>File Name:</strong> {selectedFile.name}</p>
+          <p><strong>File Size:</strong> {formatFileSize(selectedFile.size)}</p>
+          <p><strong>File Type:</strong> {selectedFile.type || 'Unknown'}</p>
+        </div>
+        <p className="verification-message">Please confirm that this is the correct file before submitting.</p>
+        <div className="verification-button">
+          <button className="confirm-btn" onClick={handleConfirmSubmit}>
+            Confirm & Submit
+          </button>
+          <button className="cancel-btn" onClick={handleCancel}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
+
+    {isSubmitted && (
+      <div className="success-message">
+        File Submitted Successfully
+      </div>
+    )}
+
     </div>
 
   )
