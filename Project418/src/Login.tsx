@@ -34,6 +34,7 @@ export function Login({ onLogin }: LoginProps) {
 
             if (response.ok) {
                 localStorage.setItem('username', username)
+                setLoading(false)
                 onLogin(username)
             } else {
                 setError(data.error || 'Authentication failed')
@@ -43,6 +44,7 @@ export function Login({ onLogin }: LoginProps) {
         } catch (err) {
             // No server available, allow local login
             localStorage.setItem('username', username)
+            setLoading(false)
             onLogin(username)
         }
     }

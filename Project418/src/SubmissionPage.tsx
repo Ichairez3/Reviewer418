@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './SubmissionPage.css'
 
-interface SubmissionPageprops {
+interface SubmissionPageProps {
     username: string
     onLogout: () => void
 }
@@ -34,7 +34,7 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
 
         try {
             const formData = new FormData()
-            formData.append('file', selectedfile)
+            formData.append('file', selectedFile)
             formData.append('username', username)
             formData.append('timestamp', new Date().toISOString())
 
@@ -52,7 +52,7 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
         }
 
         const newSubmission = {
-            id: Data.now().toString(),
+            id: Date.now().toString(),
             filename: selectedFile.name,
             size: formatFileSize(selectedFile.size),
             timestamp: new Date().toLocaleString(),
@@ -68,6 +68,10 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
 
     const handleCancel = () => {
         setIsVerifying(false)
+    }
+
+    const handleTurnInClick = () => {
+        document.getElementById('fileInput')?.click()
     }
 
     const formatFileSize = (bytes: number) => {

@@ -23,7 +23,7 @@ function App() {
   const handleLogout = () => {
     setIsLoggedIn(false)
     setUsername('')
-    localStorage.removeItem('username')
+    localStorage.clear()
   }
 
   return (
