@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #76ba2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .login-box {
@@ -83,7 +83,7 @@
 .login-btn:hover:not(:disabled) {
     background-color: #5568d3;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, o.4);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .login-btn:disabled {

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Menu } from './Menu'
 import './SubmissionPage.css'
 
 interface SubmissionPageProps {
@@ -10,11 +11,13 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [isVerifying, setIsVerifying] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const [showAccountModal, setShowAccountModal] = useState(false)
+    const [showPreviousSubmissions, setShowPreviousSubmissions] = useState(false)
     const [submissionHistory, setSubmissionHistory] = useState<Array<{
-        id: String
-        filename: String
-        size: String
-        timestamp: String
+        id: string
+        filename: string
+        size: string
+        timestamp: string
     }>>([])
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,8 +81,26 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
         return (bytes / 1024).toFixed(2) + 'KB'
     }
 
+        const handleShowPreviousSubmissions = () => {
+        setShowPreviousSubmissions(true)
+    }
+
+    const handleShowAccount = () => {
+        setShowAccountModal(true)
+    }
+
+    const closeModals = () => {
+        setShowAccountModal(false)
+        setShowPreviousSubmissions(false)
+    }
+
     return (
         <div className = "submission-container">
+            <Menu 
+                username={username}
+                onShowPreviousSubmissions={handleShowPreviousSubmissions}
+                onShowAccount={handleShowAccount}
+            />
             <div className = "header">
                 <h1>Paper Submission Portal</h1>
                 <div className = "user-info">
@@ -168,6 +189,67 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Account Modal */}
+            {showAccountModal && (
+                <div className="modal-overlay" onClick={closeModals}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Account Information</h2>
+                            <button className="modal-close" onClick={closeModals}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="account-info-item">
+                                <span className="account-label">Username:</span>
+                                <span className="account-value">{username}</span>
+                            </div>
+                            <div className="account-info-item">
+                                <span className="account-label">Total Submissions:</span>
+                                <span className="account-value">{submissionHistory.length}</span>
+                            </div>
+                            <div className="account-info-item">
+                                <span className="account-label">Last Submission:</span>
+                                <span className="account-value">
+                                    {submissionHistory.length > 0 
+                                        ? submissionHistory[0].timestamp 
+                                        : 'No submissions yet'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Previous Submissions Modal */}
+            {showPreviousSubmissions && (
+                <div className="modal-overlay" onClick={closeModals}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Previous Submissions</h2>
+                            <button className="modal-close" onClick={closeModals}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            {submissionHistory.length > 0 ? (
+                                <div className="submissions-list-modal">
+                                    {submissionHistory.map((submission) => (
+                                        <div key={submission.id} className="submission-item-modal">
+                                            <p className="submission-filename">{submission.filename}</p>
+                                            <p className="submission-meta">
+                                                Size: {submission.size}
+                                            </p>
+                                            <p className="submission-meta">
+                                                Time: {submission.timestamp}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="no-submissions">No submissions yet</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
