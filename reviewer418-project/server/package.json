@@ -12,9 +12,10 @@
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",
-    "dotnet": "^1.1.4",
+    "dotenv": "^16.0.3",
     "express": "^5.2.1",
-    "mongoose": "^9.1.6"
+    "mongoose": "^9.1.6",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
