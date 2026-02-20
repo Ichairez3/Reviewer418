@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
+import { Login } from './Login'
+import { SubmissionPage } from './SubmissionPage'
 import './App.css'
 
 function App() {
@@ -16,17 +16,16 @@ function App() {
       setSelectedFile(file)
       setErrorMessage(null)
       console.log('File selected:', file.name)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [username, setUsername] = useState('')
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username')
+    if (storedUsername) {
+      setUsername(storedUsername)
+      setIsLoggedIn(true)
     }
-  }
-
-  const handleTurnInClick = () => {
-    const fileInput = document.getElementById('fileInput') as HTMLInputElement
-    fileInput?.click()
-  }
-
-  const handleSubmit = () => {
-    setIsVerifying(true)
-  }
+  }, [])
 
   const handleConfirmSubmit = async () => {
     if (!selectedFile) {
@@ -127,8 +126,29 @@ function App() {
 
     </div>
 
+  const handleLogin = (user: string) => {
+    setUsername(user)
+    setIsLoggedIn(true)
+  }
+
+  const handleLogout = () => {
+    setIsLoggedIn(false)
+    setUsername('')
+    localStorage.clear()
+  }
+
+  return (
+    <>
+      {!isLoggedIn ? (
+        <Login onLogin={handleLogin} />
+      ) : (
+        <SubmissionPage username={username} onLogout={handleLogout} />
+      )}
+    </>
   )
 }
+
+export default App
 
 
   /*
@@ -158,5 +178,3 @@ function App() {
   )
 }
 */
-
-export default App
