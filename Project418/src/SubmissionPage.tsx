@@ -38,35 +38,37 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
         try {
             const formData = new FormData()
             formData.append('file', selectedFile)
-            formData.append('username', username)
-            formData.append('timestamp', new Date().toISOString())
 
-            const response = await fetch('/api/submit', {
+            const response = await fetch('/api/papers', {
                 method: 'POST',
                 body: formData,
             })
 
             if (response.ok) {
                 const data = await response.json()
-                console.log('File Submitted:', data)
+                console.log('File uploaded to database:', data)
+                
+                const newSubmission = {
+                    id: data.paperId || Date.now().toString(),
+                    filename: data.fileName || selectedFile.name,
+                    size: formatFileSize(selectedFile.size),
+                    timestamp: new Date().toLocaleString(),
+                }
+
+                setSubmissionHistory([newSubmission, ...submissionHistory])
+                setIsSubmitted(true)
+                setSelectedFile(null)
+                setIsVerifying(false)
+                setTimeout(() => setIsSubmitted(false), 3000)
+            } else {
+                const error = await response.json()
+                console.error('Upload error:', error)
+                alert('Failed to upload file: ' + error.error)
             }
         } catch (err) {
-            console.log('No server available, using local storage.')
+            console.error('Upload failed:', err)
+            alert('Failed to connect to server. Make sure the backend is running on http://localhost:5000')
         }
-
-        const newSubmission = {
-            id: Date.now().toString(),
-            filename: selectedFile.name,
-            size: formatFileSize(selectedFile.size),
-            timestamp: new Date().toLocaleString(),
-        }
-
-        setSubmissionHistory([newSubmission, ...submissionHistory])
-        console.log('File Submitted:', selectedFile?.name, 'by', username)
-        setIsSubmitted(true)
-        setSelectedFile(null)
-        setIsVerifying(false)
-        setTimeout(() => setIsSubmitted(false), 3000)
     }
 
     const handleCancel = () => {
