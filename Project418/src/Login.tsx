@@ -51,7 +51,7 @@ export function Login({ onLogin }: LoginProps) {
     return (
         <div className = "login-container">
             <div className = "login-box">
-                <h1> Paper Submission Portal</h1>
+                <h1> Reviewer418 </h1>
                 <h2>{isSignup ? 'Create Account' : 'Login'}</h2>
 
                 {error && <div className="error-message">{error}</div>}

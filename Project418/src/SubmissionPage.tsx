@@ -104,7 +104,7 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
                 onShowAccount={handleShowAccount}
             />
             <div className = "header">
-                <h1>Paper Submission Portal</h1>
+                <h1>Tea Submission Portal</h1>
                 <div className = "user-info">
                     <span className="username-display">Welcome, {username}</span>
                     <button className="logout-btn" onClick={onLogout}>
