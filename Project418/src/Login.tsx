@@ -42,10 +42,9 @@ export function Login({ onLogin }: LoginProps) {
             }
 
         } catch (err) {
-            // No server available, allow local login
-            localStorage.setItem('username', username)
+            console.error('Network error:', err)
+            setError('Unable to reach server. Please try again later.')
             setLoading(false)
-            onLogin(username)
         }
     }
     return (

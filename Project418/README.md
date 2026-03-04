@@ -71,3 +71,15 @@ export default defineConfig([
   },
 ])
 ```
+
+---
+
+## Application-specific notes
+
+The login component in `src/Login.tsx` communicates with the backend server to authenticate users. The server must be running at `http://localhost:5000` (the Vite config already proxies `/api/*`).
+
+* **Sign Up** sends `POST /api/auth/signup` with `{ username, email?, password }`. A new user document is created in MongoDB (passwords are hashed). Duplicate usernames are rejected.
+* **Log In** sends `POST /api/auth/login` with `{ username, password }`. The server checks the database and returns a 401 error if the account does not exist or the password is wrong.
+
+Make sure the server environment has a valid `MONGO_URI` and start it with `npm run dev` from the `reviewer418-project/server` directory.
+
