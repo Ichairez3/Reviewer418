@@ -25,13 +25,13 @@
 .hamburger-button span {
     width: 1.5rem;
     height: 0.2rem;
-    background-color: #333;
+    background-color: #5a873d;
     border-radius: 0.1rem;
     transition: all 0.3s ease;
 }
 
 .hamburger-button:hover span {
-    background-color: #555;
+    background-color: #4a6b2f;
 }
 
 .hamburger-button:hover {
@@ -105,9 +105,9 @@
 }
 
 .dropdown-item:hover {
-    background-color: #f0f0f0;
+    background-color: #e8f4e0;
 }
 
 .dropdown-item:active {
-    background-color: #e8e8e8;
+    background-color: #d4e8c8;
 }

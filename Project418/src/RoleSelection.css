@@ -1,0 +1,138 @@
+.role-selection-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #5a873d 0%, #4a6b2f 100%);
+    padding: 2rem;
+}
+
+.role-selection-box {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+}
+
+.role-logo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.5rem;
+}
+
+.role-selection-box h1 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.welcome-text {
+    font-size: 1.2rem;
+    color: #5a873d;
+    margin: 0.5rem 0;
+    font-weight: 500;
+}
+
+.subtitle {
+    color: #888;
+    margin: 1rem 0 2rem 0;
+    font-size: 1rem;
+}
+
+.role-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.role-button {
+    padding: 2rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.role-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.submitter-btn {
+    border-color: #5a873d;
+}
+
+.submitter-btn:hover {
+    border-color: #5a873d;
+    background: rgba(90, 135, 61, 0.05);
+}
+
+.reviewer-btn {
+    border-color: #4a6b2f;
+}
+
+.reviewer-btn:hover {
+    border-color: #4a6b2f;
+    background: rgba(74, 107, 47, 0.05);
+}
+
+.role-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.role-description {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.logout-btn {
+    margin-top: 2rem;
+    padding: 0.75rem 2rem;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #ee5a52;
+}
+
+@media (max-width: 768px) {
+    .role-selection-box {
+        padding: 2rem 1.5rem;
+    }
+
+    .role-selection-box h1 {
+        font-size: 2rem;
+    }
+
+    .role-options {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .role-button {
+        padding: 1.5rem;
+    }
+
+    .role-icon {
+        font-size: 2.5rem;
+    }
+}

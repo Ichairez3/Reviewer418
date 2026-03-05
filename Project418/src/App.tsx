@@ -1,41 +1,75 @@
 import { useState, useEffect } from 'react'
 import { Login } from './Login'
+import { RoleSelection } from './RoleSelection'
 import { SubmissionPage } from './SubmissionPage'
+import { ReviewerPage } from './ReviewerPage'
 import './App.css'
 
+type UserRole = 'submitter' | 'reviewer' | null
+
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [username, setUsername] = useState('')
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [username, setUsername] = useState('')
+    const [userRole, setUserRole] = useState<UserRole>(null)
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem('username')
-    if (storedUsername) {
-      setUsername(storedUsername)
-      setIsLoggedIn(true)
+    useEffect(() => {
+        const storedUsername = localStorage.getItem('username')
+        const storedRole = localStorage.getItem('userRole') as UserRole
+        if (storedUsername && storedRole) {
+            setUsername(storedUsername)
+            setUserRole(storedRole)
+            setIsLoggedIn(true)
+        }
+    }, [])
+
+    const handleLogin = (user: string) => {
+        setUsername(user)
+        setIsLoggedIn(true)
+        localStorage.setItem('username', user)
     }
-  }, [])
 
-  
-  const handleLogin = (user: string) => {
-    setUsername(user)
-    setIsLoggedIn(true)
-  }
+    const handleRoleSelect = (role: 'submitter' | 'reviewer') => {
+        setUserRole(role)
+        localStorage.setItem('userRole', role)
+    }
 
-  const handleLogout = () => {
-    setIsLoggedIn(false)
-    setUsername('')
-    localStorage.clear()
-  }
+    const handleBackToRoleSelection = () => {
+        setUserRole(null)
+        localStorage.removeItem('userRole')
+    }
 
-  return (
-    <>
-      {!isLoggedIn ? (
-        <Login onLogin={handleLogin} />
-      ) : (
-        <SubmissionPage username={username} onLogout={handleLogout} />
-      )}
-    </>
-  )
+    const handleLogout = () => {
+        setIsLoggedIn(false)
+        setUsername('')
+        setUserRole(null)
+        localStorage.clear()
+    }
+
+    return (
+        <>
+            {!isLoggedIn ? (
+                <Login onLogin={handleLogin} />
+            ) : !userRole ? (
+                <RoleSelection 
+                    username={username}
+                    onSelectRole={handleRoleSelect}
+                    onLogout={handleLogout}
+                />
+            ) : userRole === 'submitter' ? (
+                <SubmissionPage 
+                    username={username} 
+                    onLogout={handleLogout}
+                    onBackToMain={handleBackToRoleSelection}
+                />
+            ) : (
+                <ReviewerPage 
+                    username={username} 
+                    onLogout={handleLogout}
+                    onBackToMain={handleBackToRoleSelection}
+                />
+            )}
+        </>
+    )
 }
 
 export default App

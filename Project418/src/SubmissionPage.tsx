@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { Menu } from './Menu'
 import './SubmissionPage.css'
+import logo from './assets/logo.png'
 
 interface SubmissionPageProps {
     username: string
     onLogout: () => void
+    onBackToMain: () => void
 }
 
-export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
+export function SubmissionPage({ username, onLogout, onBackToMain }: SubmissionPageProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [isVerifying, setIsVerifying] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
     const [showAccountModal, setShowAccountModal] = useState(false)
     const [showPreviousSubmissions, setShowPreviousSubmissions] = useState(false)
+    const [showSettingsModal, setShowSettingsModal] = useState(false)
     const [submissionHistory, setSubmissionHistory] = useState<Array<{
         id: string
         filename: string
@@ -75,6 +78,11 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
         setIsVerifying(false)
     }
 
+    const handleReturnToStart = () => {
+        setSelectedFile(null)
+        setIsVerifying(false)
+    }
+
     const handleTurnInClick = () => {
         document.getElementById('fileInput')?.click()
     }
@@ -83,7 +91,7 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
         return (bytes / 1024).toFixed(2) + 'KB'
     }
 
-        const handleShowPreviousSubmissions = () => {
+    const handleShowPreviousSubmissions = () => {
         setShowPreviousSubmissions(true)
     }
 
@@ -91,9 +99,14 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
         setShowAccountModal(true)
     }
 
+    const handleShowSettings = () => {
+        setShowSettingsModal(true)
+    }
+
     const closeModals = () => {
         setShowAccountModal(false)
         setShowPreviousSubmissions(false)
+        setShowSettingsModal(false)
     }
 
     return (
@@ -102,11 +115,25 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
                 username={username}
                 onShowPreviousSubmissions={handleShowPreviousSubmissions}
                 onShowAccount={handleShowAccount}
+                onShowSettings={handleShowSettings}
             />
             <div className = "header">
-                <h1>Tea Submission Portal</h1>
+                <div className="header-left">
+                    <img 
+                        src={logo} 
+                        alt="Reviewer418 Logo" 
+                        className="header-logo"
+                        onClick={onBackToMain}
+                        style={{ cursor: 'pointer' }}
+                        title="Click to change role"
+                    />
+                    <h1>Tea Submission Portal</h1>
+                </div>
                 <div className = "user-info">
                     <span className="username-display">Welcome, {username}</span>
+                    <button className="back-to-main-btn" onClick={onBackToMain}>
+                        ← Change Role
+                    </button>
                     <button className="logout-btn" onClick={onLogout}>
                         Logout
                     </button>
@@ -131,9 +158,14 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
                         <p className = "file-info">
                             Selected: <strong>{selectedFile.name}</strong>
                         </p>
-                        <button className="submit-btn" onClick={handleSubmit}>
-                            Submit
-                        </button>
+                        <div className="file-action-buttons">
+                            <button className="submit-btn" onClick={handleSubmit}>
+                                Submit
+                            </button>
+                            <button className="return-btn" onClick={handleReturnToStart}>
+                                ← Return
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -165,8 +197,8 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
                             <button className="confirm-btn" onClick={handleConfirmSubmit}>
                                 Confirm & Submit
                             </button>
-                            <button className = "cancel-btn" onClick = {handleCancel}>
-                                Cancel
+                            <button className = "return-btn" onClick = {handleCancel}>
+                                ← Return
                             </button>
                         </div>
                     </div>
@@ -251,6 +283,24 @@ export function SubmissionPage({ username, onLogout }: SubmissionPageProps) {
                             ) : (
                                 <p className="no-submissions">No submissions yet</p>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Settings Modal */}
+            {showSettingsModal && (
+                <div className="modal-overlay" onClick={closeModals}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Settings</h2>
+                            <button className="modal-close" onClick={closeModals}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="settings-section">
+                                <h3>Preferences</h3>
+                                <p>Settings coming soon...</p>
+                            </div>
                         </div>
                     </div>
                 </div>

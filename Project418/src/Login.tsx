@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './Login.css'
+import logo from './assets/logo.png'
 
 interface LoginProps {
     onLogin: (username: string) => void
@@ -50,6 +51,7 @@ export function Login({ onLogin }: LoginProps) {
     return (
         <div className = "login-container">
             <div className = "login-box">
+                <img src={logo} alt="Reviewer418 Logo" className="login-logo" />
                 <h1> Reviewer418 </h1>
                 <h2>{isSignup ? 'Create Account' : 'Login'}</h2>
 

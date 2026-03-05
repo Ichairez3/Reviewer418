@@ -73,6 +73,115 @@ const paperSchema = new mongoose.Schema({
 
 const Paper = mongoose.model("Paper", paperSchema);
 
+// Conference schema
+const conferenceSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: Date,
+    required: true
+  },
+  location: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Conference = mongoose.model("Conference", conferenceSchema);
+
+// Submission schema
+const submissionSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  authors: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['Paper', 'Poster', 'Workshop'],
+    required: true
+  },
+  conference: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Conference',
+    required: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  fileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Paper'
+  },
+  submittedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Submission = mongoose.model("Submission", submissionSchema);
+
+// Reviewer schema
+const reviewerSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  expertise: {
+    type: String,
+    required: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Reviewer = mongoose.model("Reviewer", reviewerSchema);
+
+// Review schema
+const reviewSchema = new mongoose.Schema({
+  submission: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Submission',
+    required: true
+  },
+  reviewer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Reviewer',
+    required: true
+  },
+  score: {
+    type: Number,
+    min: 0,
+    max: 10
+  },
+  comments: {
+    type: String
+  },
+  submittedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Review = mongoose.model("Review", reviewSchema);
+
 // Simple test route
 app.get("/", (req, res) => {
   res.send("Server is running");
@@ -127,9 +236,137 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Example API route
-app.get("/api/notes", async (req, res) => {
-  res.json([{ _id: "1", text: "hello from server" }]);
+// Conference routes
+app.post("/api/conferences", async (req, res) => {
+  try {
+    const { name, date, location } = req.body;
+    const conference = new Conference({ name, date, location });
+    const saved = await conference.save();
+    res.status(201).json(saved);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/conferences", async (req, res) => {
+  try {
+    const conferences = await Conference.find().sort({ date: -1 });
+    res.json(conferences);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/conferences/:id", async (req, res) => {
+  try {
+    const conference = await Conference.findById(req.params.id);
+    if (!conference) {
+      return res.status(404).json({ error: "Conference not found" });
+    }
+    res.json(conference);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Submission routes
+app.post("/api/submissions", async (req, res) => {
+  try {
+    const { title, authors, type, conferenceId, userId, fileId } = req.body;
+    const submission = new Submission({ 
+      title, 
+      authors, 
+      type, 
+      conference: conferenceId, 
+      userId, 
+      fileId 
+    });
+    const saved = await submission.save();
+    res.status(201).json(saved);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/submissions", async (req, res) => {
+  try {
+    const submissions = await Submission.find()
+      .populate('conference')
+      .populate('userId', 'username')
+      .sort({ submittedAt: -1 });
+    res.json(submissions);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/conferences/:conferenceId/submissions", async (req, res) => {
+  try {
+    const submissions = await Submission.find({ conference: req.params.conferenceId })
+      .populate('userId', 'username')
+      .sort({ submittedAt: -1 });
+    res.json(submissions);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reviewer routes
+app.post("/api/reviewers", async (req, res) => {
+  try {
+    const { name, expertise, userId } = req.body;
+    const reviewer = new Reviewer({ name, expertise, userId });
+    const saved = await reviewer.save();
+    res.status(201).json(saved);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/reviewers", async (req, res) => {
+  try {
+    const reviewers = await Reviewer.find();
+    res.json(reviewers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Review routes
+app.post("/api/reviews", async (req, res) => {
+  try {
+    const { submissionId, reviewerId, score, comments } = req.body;
+    const review = new Review({
+      submission: submissionId,
+      reviewer: reviewerId,
+      score,
+      comments
+    });
+    const saved = await review.save();
+    res.status(201).json(saved);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/submissions/:submissionId/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find({ submission: req.params.submissionId })
+      .populate('reviewer');
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/reviewers/:reviewerId/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find({ reviewer: req.params.reviewerId })
+      .populate('submission');
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // File upload endpoint

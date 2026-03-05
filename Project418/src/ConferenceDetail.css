@@ -1,0 +1,333 @@
+.conference-detail-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+.back-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.back-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateX(-5px);
+}
+
+.detail-header {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.header-info h1 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 2rem;
+}
+
+.header-info .date,
+.header-info .location {
+    margin: 0.5rem 0;
+    color: #666;
+    font-size: 1rem;
+}
+
+.detail-header .submit-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+}
+
+.detail-header .submit-btn:hover {
+    background-color: #764ba2;
+}
+
+.submissions-section {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.submissions-section h2 {
+    color: white;
+    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+}
+
+.submissions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.submission-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.submission-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.submission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.submission-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.type-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: white;
+}
+
+.type-badge.paper {
+    background-color: #667eea;
+}
+
+.type-badge.poster {
+    background-color: #51cf66;
+}
+
+.type-badge.workshop {
+    background-color: #ff8c42;
+}
+
+.submission-item .authors {
+    color: #555;
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.submission-item .submitter {
+    color: #777;
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.submission-item .date {
+    color: #999;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.view-reviews-btn {
+    background-color: #667eea;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.view-reviews-btn:hover {
+    background-color: #764ba2;
+}
+
+.no-submissions {
+    background: white;
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    color: #999;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.error-message {
+    background-color: #ff6b6b;
+    color: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    text-align: center;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.loading {
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+    padding: 3rem;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-body p {
+    margin: 0.75rem 0;
+    color: #555;
+    line-height: 1.6;
+}
+
+.form-group {
+    padding: 1rem 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    margin-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.cancel-btn,
+.submit-form-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-btn {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.cancel-btn:hover {
+    background-color: #dee2e6;
+}
+
+.submit-form-btn {
+    background-color: #667eea;
+    color: white;
+}
+
+.submit-form-btn:hover {
+    background-color: #764ba2;
+}
+
+@media (max-width: 768px) {
+    .conference-detail-container {
+        padding: 1rem;
+    }
+
+    .detail-header {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .header-info h1 {
+        font-size: 1.5rem;
+    }
+
+    .modal {
+        width: 95%;
+    }
+}

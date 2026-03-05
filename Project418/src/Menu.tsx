@@ -5,9 +5,10 @@ interface MenuProps {
     username: string
     onShowPreviousSubmissions: () => void
     onShowAccount: () => void
+    onShowSettings?: () => void
 }
 
-export function Menu({ username, onShowPreviousSubmissions, onShowAccount }: MenuProps) {
+export function Menu({ username, onShowPreviousSubmissions, onShowAccount, onShowSettings }: MenuProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     const handleMenuToggle = () => {
@@ -22,6 +23,13 @@ export function Menu({ username, onShowPreviousSubmissions, onShowAccount }: Men
     const handleAccount = () => {
         onShowAccount()
         setIsOpen(false)
+    }
+
+    const handleSettings = () => {
+        if (onShowSettings) {
+            onShowSettings()
+            setIsOpen(false)
+        }
     }
 
     return (
@@ -53,6 +61,14 @@ export function Menu({ username, onShowPreviousSubmissions, onShowAccount }: Men
                     >
                         Account
                     </button>
+                    {onShowSettings && (
+                        <button
+                            className="dropdown-item"
+                            onClick={handleSettings}
+                        >
+                            Settings
+                        </button>
+                    )}
                 </div>
             )}
         </div>
