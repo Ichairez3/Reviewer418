@@ -10,13 +10,16 @@ type UserRole = 'submitter' | 'reviewer' | null
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [username, setUsername] = useState('')
+    const [email, setEmail] = useState('')
     const [userRole, setUserRole] = useState<UserRole>(null)
 
     useEffect(() => {
         const storedUsername = localStorage.getItem('username')
+        const storedEmail = localStorage.getItem('email')
         const storedRole = localStorage.getItem('userRole') as UserRole
         if (storedUsername && storedRole) {
             setUsername(storedUsername)
+            setEmail(storedEmail || '')
             setUserRole(storedRole)
             setIsLoggedIn(true)
         }
@@ -57,7 +60,8 @@ function App() {
                 />
             ) : userRole === 'submitter' ? (
                 <SubmissionPage 
-                    username={username} 
+                    username={username}
+                    email={email}
                     onLogout={handleLogout}
                     onBackToMain={handleBackToRoleSelection}
                 />

@@ -5,11 +5,12 @@ import logo from './assets/logo.png'
 
 interface SubmissionPageProps {
     username: string
+    email: string
     onLogout: () => void
     onBackToMain: () => void
 }
 
-export function SubmissionPage({ username, onLogout, onBackToMain }: SubmissionPageProps) {
+export function SubmissionPage({ username, email, onLogout, onBackToMain }: SubmissionPageProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [isVerifying, setIsVerifying] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
@@ -41,6 +42,7 @@ export function SubmissionPage({ username, onLogout, onBackToMain }: SubmissionP
         try {
             const formData = new FormData()
             formData.append('file', selectedFile)
+            formData.append('email', email)
 
             const response = await fetch('/api/papers', {
                 method: 'POST',
@@ -175,6 +177,9 @@ export function SubmissionPage({ username, onLogout, onBackToMain }: SubmissionP
                         <div className = "verification-details">
                             <p>
                                 <strong>Username:</strong> {username}
+                            </p>
+                            <p>
+                                <strong>Email:</strong> {email}
                             </p>
                             <p>
                                 <strong>File Name:</strong> {selectedFile.name}

@@ -35,6 +35,11 @@ export function Login({ onLogin }: LoginProps) {
 
             if (response.ok) {
                 localStorage.setItem('username', username)
+                if (isSignup) {
+                    localStorage.setItem('email', email)
+                } else if (data.email) {
+                    localStorage.setItem('email', data.email)
+                }
                 setLoading(false)
                 onLogin(username)
             } else {

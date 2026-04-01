@@ -68,6 +68,10 @@ const paperSchema = new mongoose.Schema({
   originalName: {
     type: String,
     required: true
+  },
+  submitterEmail: {
+    type: String,
+    required: true
   }
 });
 
@@ -381,14 +385,16 @@ app.post("/api/papers", upload.single("file"), async (req, res) => {
       fileData: req.file.buffer,
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
-      originalName: req.file.originalname
+      originalName: req.file.originalname,
+      submitterEmail: req.body.email || ''
     });
 
     const savedPaper = await paper.save();
     res.status(200).json({ 
       message: "File uploaded successfully",
       paperId: savedPaper._id,
-      fileName: savedPaper.fileName
+      fileName: savedPaper.fileName,
+      submitterEmail: savedPaper.submitterEmail
     });
   } catch (error) {
     console.error("Upload error:", error);
