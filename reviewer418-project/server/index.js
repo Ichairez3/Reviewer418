@@ -233,7 +233,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // authentication succeeded
-    res.json({ message: 'Login successful', username: user.username });
+    res.json({ message: 'Login successful', username: user.username, email: user.email });
   } catch (err) {
     console.error('Login error', err);
     res.status(500).json({ error: 'Server error' });
@@ -380,13 +380,17 @@ app.post("/api/papers", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file provided" });
     }
 
+    if (!req.body.email) {
+      return res.status(400).json({ error: "Email is required for submission" });
+    }
+
     const paper = new Paper({
       fileName: req.file.originalname,
       fileData: req.file.buffer,
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
       originalName: req.file.originalname,
-      submitterEmail: req.body.email || ''
+      submitterEmail: req.body.email
     });
 
     const savedPaper = await paper.save();

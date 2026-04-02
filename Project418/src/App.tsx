@@ -29,6 +29,10 @@ function App() {
         setUsername(user)
         setIsLoggedIn(true)
         localStorage.setItem('username', user)
+        const storedEmail = localStorage.getItem('email')
+        if (storedEmail) {
+            setEmail(storedEmail)
+        }
     }
 
     const handleRoleSelect = (role: 'submitter' | 'reviewer') => {
