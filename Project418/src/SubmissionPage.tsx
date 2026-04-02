@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu } from './Menu'
 import './SubmissionPage.css'
 import logo from './assets/logo.png'
@@ -10,19 +10,33 @@ interface SubmissionPageProps {
     onBackToMain: () => void
 }
 
+interface Submission {
+    _id: string
+    originalName: string
+    fileName: string
+    fileSize: number
+    uploadedAt: string
+    submitterEmail: string
+}
+
 export function SubmissionPage({ username, email, onLogout, onBackToMain }: SubmissionPageProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [isVerifying, setIsVerifying] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
     const [showAccountModal, setShowAccountModal] = useState(false)
-    const [showPreviousSubmissions, setShowPreviousSubmissions] = useState(false)
     const [showSettingsModal, setShowSettingsModal] = useState(false)
+    const [activeTab, setActiveTab] = useState<'submit' | 'history'>('submit')
     const [submissionHistory, setSubmissionHistory] = useState<Array<{
         id: string
         filename: string
         size: string
         timestamp: string
     }>>([])
+    const [isDownloading, setIsDownloading] = useState<string | null>(null)
+
+    useEffect(() => {
+        fetchSubmissions()
+    }, [email])
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
@@ -65,6 +79,7 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
                 setSelectedFile(null)
                 setIsVerifying(false)
                 setTimeout(() => setIsSubmitted(false), 3000)
+                fetchSubmissions()
             } else {
                 const error = await response.json()
                 console.error('Upload error:', error)
@@ -73,6 +88,50 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
         } catch (err) {
             console.error('Upload failed:', err)
             alert('Failed to connect to server. Make sure the backend is running on http://localhost:5000')
+        }
+    }
+
+    const fetchSubmissions = async () => {
+        try {
+            const response = await fetch('/api/papers')
+            if (response.ok) {
+                const papers = await response.json()
+                const userPapers = papers.filter((paper: Submission) => paper.submitterEmail === email)
+                const formatted = userPapers.map((paper: Submission) => ({
+                    id: paper._id,
+                    filename: paper.originalName,
+                    size: formatFileSize(paper.fileSize),
+                    timestamp: new Date(paper.uploadedAt).toLocaleString(),
+                }))
+                setSubmissionHistory(formatted)
+            }
+        } catch (err) {
+            console.error('Failed to fetch submissions:', err)
+        }
+    }
+
+    const handleDownload = async (paperId: string, filename: string) => {
+        setIsDownloading(paperId)
+        try {
+            const response = await fetch(`/api/papers/${paperId}`)
+            if (response.ok) {
+                const blob = await response.blob()
+                const url = window.URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = filename
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                window.URL.revokeObjectURL(url)
+            } else {
+                alert('Failed to download file')
+            }
+        } catch (err) {
+            console.error('Download failed:', err)
+            alert('Failed to download file')
+        } finally {
+            setIsDownloading(null)
         }
     }
 
@@ -93,10 +152,6 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
         return (bytes / 1024).toFixed(2) + 'KB'
     }
 
-    const handleShowPreviousSubmissions = () => {
-        setShowPreviousSubmissions(true)
-    }
-
     const handleShowAccount = () => {
         setShowAccountModal(true)
     }
@@ -107,20 +162,13 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
 
     const closeModals = () => {
         setShowAccountModal(false)
-        setShowPreviousSubmissions(false)
         setShowSettingsModal(false)
     }
 
     return (
-        <div className = "submission-container">
-            <Menu 
-                username={username}
-                onShowPreviousSubmissions={handleShowPreviousSubmissions}
-                onShowAccount={handleShowAccount}
-                onShowSettings={handleShowSettings}
-            />
-            <div className = "header">
-                <div className="header-left">
+        <div className="submission-container">
+            <div className="submission-header">
+                <div className="header-content">
                     <img 
                         src={logo} 
                         alt="Reviewer418 Logo" 
@@ -129,121 +177,175 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
                         style={{ cursor: 'pointer' }}
                         title="Click to change role"
                     />
-                    <h1>Tea Submission Portal</h1>
+                    <h1>Submission Portal</h1>
                 </div>
-                <div className = "user-info">
-                    <span className="username-display">Welcome, {username}</span>
-                    <button className="back-to-main-btn" onClick={onBackToMain}>
-                        ← Change Role
-                    </button>
-                    <button className="logout-btn" onClick={onLogout}>
-                        Logout
-                    </button>
+                <div className="header-actions">
+                    <Menu 
+                        username={username}
+                        onShowPreviousSubmissions={() => setActiveTab('history')}
+                        onShowAccount={handleShowAccount}
+                        onShowSettings={handleShowSettings}
+                    />
                 </div>
             </div>
 
-            <div className="content">
-                <button className="submit-btn" onClick={handleTurnInClick}>
-                    Turn Paper In Here
-                </button>
-
-                <input
-                    id = "fileInput"
-                    type = "file"
-                    onChange = {handleFileChange}
-                    style = {{ display: 'none' }}
-                    accept = ".pdf, .doc, .docx, .txt"
-                />
-
-                {selectedFile && !isVerifying && (
-                    <div className = "file-info-container">
-                        <p className = "file-info">
-                            Selected: <strong>{selectedFile.name}</strong>
-                        </p>
-                        <div className="file-action-buttons">
-                            <button className="submit-btn" onClick={handleSubmit}>
-                                Submit
-                            </button>
-                            <button className="return-btn" onClick={handleReturnToStart}>
-                                ← Return
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {isVerifying && selectedFile && (
-                    <div className = "verification-screen">
-                        <h2>Verify Your Submission</h2>
-                        <div className = "verification-details">
-                            <p>
-                                <strong>Username:</strong> {username}
-                            </p>
-                            <p>
-                                <strong>Email:</strong> {email}
-                            </p>
-                            <p>
-                                <strong>File Name:</strong> {selectedFile.name}
-                            </p>
-                            <p>
-                                <strong>File Size:</strong> {formatFileSize(selectedFile.size)}
-                            </p>
-                            <p>
-                                <strong>File Type:</strong> {selectedFile.type || 'Unknown'}
-                            </p>
-                            <p>
-                                <strong>Submission Time:</strong>{' '}
-                                {new Date().toLocaleString()}
-                            </p>
-                        </div>
-                        <p className="verification-message">
-                            Please confirm this is the correct file
-                        </p>
-                        <div className= "verification-button">
-                            <button className="confirm-btn" onClick={handleConfirmSubmit}>
-                                Confirm & Submit
-                            </button>
-                            <button className = "return-btn" onClick = {handleCancel}>
-                                ← Return
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {isSubmitted && (
-                    <div className = "success-message">File Submitted Successfully</div>
-                )}
-            </div>
-
-            {submissionHistory.length > 0 && (
-                <div className = "submission-history">
-                    <h2>Your Submissions</h2>
-                    <div className = "history-list">
-                        {submissionHistory.map((submission) => (
-                            <div key={submission.id} className = "history-item">
-                                <div className="history-details">
-                                    <p className="history-filename">{submission.filename}</p>
-                                    <p className = "history-meta">
-                                        {submission.size} • {submission.timestamp}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+            {isSubmitted && (
+                <div className="success-message">File Submitted Successfully!</div>
             )}
+
+            <div className="submission-content">
+                <div className="tabs">
+                    <button 
+                        className={`tab ${activeTab === 'submit' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('submit')}
+                    >
+                        Submit New Paper
+                    </button>
+                    <button 
+                        className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('history')}
+                    >
+                        My Submissions ({submissionHistory.length})
+                    </button>
+                </div>
+
+                {activeTab === 'submit' && (
+                    <div className="submit-section">
+                        <div className="submit-panel">
+                            {!selectedFile && !isVerifying && (
+                                <div className="upload-container">
+                                    <h2>Upload Your Paper</h2>
+                                    <p>Select a PDF, DOC, DOCX, or TXT file to submit</p>
+                                    <button className="submit-btn" onClick={handleTurnInClick}>
+                                        Choose File
+                                    </button>
+                                </div>
+                            )}
+
+                            {selectedFile && !isVerifying && (
+                                <div className="file-preview">
+                                    <h2>File Selected</h2>
+                                    <div className="file-details">
+                                        <p><strong>Filename:</strong> {selectedFile.name}</p>
+                                        <p><strong>Size:</strong> {formatFileSize(selectedFile.size)}</p>
+                                        <p><strong>Type:</strong> {selectedFile.type || 'Unknown'}</p>
+                                    </div>
+                                    <div className="file-action-buttons">
+                                        <button className="submit-btn" onClick={handleSubmit}>
+                                            Review & Submit
+                                        </button>
+                                        <button className="return-btn" onClick={handleReturnToStart}>
+                                            Choose Different File
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {isVerifying && selectedFile && (
+                                <div className="verification-modal">
+                                    <h2>Verify Your Submission</h2>
+                                    <div className="verification-details">
+                                        <div className="detail-row">
+                                            <span className="label">Username:</span>
+                                            <span className="value">{username}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">Email:</span>
+                                            <span className="value">{email}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">File Name:</span>
+                                            <span className="value">{selectedFile.name}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">File Size:</span>
+                                            <span className="value">{formatFileSize(selectedFile.size)}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">File Type:</span>
+                                            <span className="value">{selectedFile.type || 'Unknown'}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">Submission Time:</span>
+                                            <span className="value">{new Date().toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    <p className="verification-message">
+                                        Please confirm this is the correct file to submit
+                                    </p>
+                                    <div className="verification-buttons">
+                                        <button className="confirm-btn" onClick={handleConfirmSubmit}>
+                                            Confirm & Submit
+                                        </button>
+                                        <button className="return-btn" onClick={handleCancel}>
+                                            Back to Review
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'history' && (
+                    <div className="history-section">
+                        <h2>My Submissions</h2>
+                        {submissionHistory.length === 0 ? (
+                            <div className="empty-state">
+                                <p>No submissions yet. Start by uploading a paper!</p>
+                            </div>
+                        ) : (
+                            <div className="submissions-grid">
+                                {submissionHistory.map((submission) => (
+                                    <div key={submission.id} className="submission-card">
+                                        <div className="card-header">
+                                            <h3>{submission.filename}</h3>
+                                        </div>
+                                        <p className="card-meta">
+                                            <strong>Size:</strong> {submission.size}
+                                        </p>
+                                        <p className="card-meta">
+                                            <strong>Submitted:</strong> {submission.timestamp}
+                                        </p>
+                                        <button 
+                                            className="download-btn"
+                                            onClick={() => handleDownload(submission.id, submission.filename)}
+                                            disabled={isDownloading === submission.id}
+                                        >
+                                            {isDownloading === submission.id ? 'Downloading...' : '⬇ Download'}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <input
+                id="fileInput"
+                type="file"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+                accept=".pdf, .doc, .docx, .txt"
+            />
 
             {/* Account Modal */}
             {showAccountModal && (
                 <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Account Information</h2>
-                            <button className="modal-close" onClick={closeModals}>×</button>
+                            <h3>Account Information</h3>
+                            <button className="close-btn" onClick={closeModals}>×</button>
                         </div>
                         <div className="modal-body">
                             <div className="account-info-item">
                                 <span className="account-label">Username:</span>
                                 <span className="account-value">{username}</span>
+                            </div>
+                            <div className="account-info-item">
+                                <span className="account-label">Email:</span>
+                                <span className="account-value">{email}</span>
                             </div>
                             <div className="account-info-item">
                                 <span className="account-label">Total Submissions:</span>
@@ -262,48 +364,16 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
                 </div>
             )}
 
-            {/* Previous Submissions Modal */}
-            {showPreviousSubmissions && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Previous Submissions</h2>
-                            <button className="modal-close" onClick={closeModals}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            {submissionHistory.length > 0 ? (
-                                <div className="submissions-list-modal">
-                                    {submissionHistory.map((submission) => (
-                                        <div key={submission.id} className="submission-item-modal">
-                                            <p className="submission-filename">{submission.filename}</p>
-                                            <p className="submission-meta">
-                                                Size: {submission.size}
-                                            </p>
-                                            <p className="submission-meta">
-                                                Time: {submission.timestamp}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="no-submissions">No submissions yet</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Settings Modal */}
             {showSettingsModal && (
                 <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Settings</h2>
-                            <button className="modal-close" onClick={closeModals}>×</button>
+                            <h3>Settings</h3>
+                            <button className="close-btn" onClick={closeModals}>×</button>
                         </div>
                         <div className="modal-body">
                             <div className="settings-section">
-                                <h3>Preferences</h3>
                                 <p>Settings coming soon...</p>
                             </div>
                         </div>

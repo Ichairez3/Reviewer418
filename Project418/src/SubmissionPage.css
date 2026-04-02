@@ -1,53 +1,418 @@
 .submission-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #5a873d 0%, #4a6b2f 100%);
-  padding: 2rem;
-  padding-top: 5rem;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #5a873d 0%, #4a6b2f 100%);
+    display: flex;
+    flex-direction: column;
 }
 
-.header {
-  max-width: 1280px;
-  margin: 0 auto 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.submission-header {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
 }
 
 .header-logo {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 50px;
+    height: 50px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .header-logo:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.header h1 {
-  color: #5a873d;
-  margin: 0;
-  font-size: 1.8rem;
+.header-content h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: bold;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.username-display {
+.submission-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab {
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tab:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.tab.active {
+    background: white;
+    color: #5a873d;
+}
+
+.submit-section {
+    width: 100%;
+}
+
+.submit-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.upload-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.upload-container h2 {
+    color: #333;
+    margin-top: 0;
+}
+
+.upload-container p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.file-preview {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: #f9f9f9;
+}
+
+.file-preview h2 {
+    color: #333;
+    margin-top: 0;
+}
+
+.file-details {
+    background: white;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.file-details p {
+    margin: 0.5rem 0;
+    color: #555;
+}
+
+.file-action-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.verify-section {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.verification-modal {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    border-left: 4px solid #5a873d;
+}
+
+.verification-modal h2 {
+    color: #333;
+    margin-top: 0;
+}
+
+.verification-details {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row .label {
+    font-weight: 500;
+    color: #333;
+}
+
+.detail-row .value {
+    color: #666;
+    text-align: right;
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.verification-message {
+    color: #666;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #e3f2fd;
+    border-radius: 4px;
+    border-left: 3px solid #2196f3;
+}
+
+.verification-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.history-section h2 {
+    color: white;
+    margin-top: 0;
+}
+
+.submissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.submission-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.submission-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.submission-card .card-header {
+    margin-bottom: 1rem;
+}
+
+.submission-card h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1rem;
+    word-break: break-word;
+}
+
+.submission-card .card-meta {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+.download-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #5a873d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin-top: 1rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover:not(:disabled) {
+    background-color: #4a6b2f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.download-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.empty-state {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    color: white;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.success-message {
+    background: #4caf50;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+/* Button Styles */
+.submit-btn,
+.confirm-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #5a873d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover,
+.confirm-btn:hover {
+    background-color: #4a6b2f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.return-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #e9ecef;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.return-btn:hover {
+    background-color: #dee2e6;
+    transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-body p {
+    margin: 0.75rem 0;
+    color: #555;
+}
+
+.account-info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.account-info-item:last-child {
+    border-bottom: none;
+}
+
+.account-label {
+    font-weight: 500;
+    color: #333;
+}
+
+.account-value {
+    color: #666;
+    text-align: right;
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.settings-section {
+    padding: 1rem 0;
+}
+
+.settings-section p {
+    color: #666;
+    margin: 0;
+}
   color: #333;
   font-weight: 600;
   font-size: 1rem;
