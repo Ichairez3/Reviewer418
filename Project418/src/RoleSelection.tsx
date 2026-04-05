@@ -4,10 +4,11 @@ import logo from './assets/logo.png'
 interface RoleSelectionProps {
     username: string
     onSelectRole: (role: 'submitter' | 'reviewer') => void
+    onViewConferences: () => void
     onLogout: () => void
 }
 
-export function RoleSelection({ username, onSelectRole, onLogout }: RoleSelectionProps) {
+export function RoleSelection({ username, onSelectRole, onViewConferences, onLogout }: RoleSelectionProps) {
     return (
         <div className="role-selection-container">
             <div className="role-selection-box">
@@ -33,6 +34,14 @@ export function RoleSelection({ username, onSelectRole, onLogout }: RoleSelectio
                         <div className="role-description">Review submissions and provide feedback</div>
                     </button>
                 </div>
+
+                <button 
+                    className="role-button conferences-btn"
+                    onClick={onViewConferences}
+                >
+                    <div className="role-title">Conferences</div>
+                    <div className="role-description">Browse and manage conferences</div>
+                </button>
 
                 <button className="logout-btn" onClick={onLogout}>
                     Logout

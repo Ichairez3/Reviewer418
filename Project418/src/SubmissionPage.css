@@ -106,6 +106,54 @@
     margin-bottom: 1.5rem;
 }
 
+.conference-selector {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: #f5f5f5;
+    border-radius: 6px;
+}
+
+.conference-selector label {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: #333;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.conference-selector select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    background: white;
+    cursor: pointer;
+    max-width: 400px;
+    margin: 0 auto;
+    display: block;
+    box-sizing: border-box;
+}
+
+.conference-selector select:focus {
+    outline: none;
+    border-color: #5a873d;
+    box-shadow: 0 0 0 3px rgba(90, 135, 61, 0.1);
+}
+
+.conference-selector select:disabled {
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+    color: #999;
+}
+
+.no-conferences-message {
+    color: #ff6b6b;
+    font-size: 0.95rem;
+    margin-top: 0.75rem;
+}
+
 .file-preview {
     border: 2px solid #e0e0e0;
     border-radius: 8px;
@@ -412,10 +460,6 @@
 .settings-section p {
     color: #666;
     margin: 0;
-}
-  color: #333;
-  font-weight: 600;
-  font-size: 1rem;
 }
 
 .logout-btn {

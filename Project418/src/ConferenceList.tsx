@@ -1,20 +1,23 @@
 import { useState, useEffect } from 'react'
 import './ConferenceList.css'
+import logo from './assets/logo.png'
 
 interface Conference {
     _id: string
     name: string
     date: string
     location: string
+    createdBy?: string
 }
 
 interface ConferenceListProps {
     username: string
     onSelectConference: (conference: Conference) => void
     onLogout: () => void
+    onBack?: () => void
 }
 
-export function ConferenceList({ username, onSelectConference, onLogout }: ConferenceListProps) {
+export function ConferenceList({ username, onSelectConference, onLogout, onBack }: ConferenceListProps) {
     const [conferences, setConferences] = useState<Conference[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
@@ -60,7 +63,8 @@ export function ConferenceList({ username, onSelectConference, onLogout }: Confe
                 body: JSON.stringify({
                     name: newConference.name,
                     date: new Date(newConference.date).toISOString(),
-                    location: newConference.location
+                    location: newConference.location,
+                    createdBy: username
                 })
             })
 
@@ -91,6 +95,15 @@ export function ConferenceList({ username, onSelectConference, onLogout }: Confe
                     <p>Conference Management System</p>
                 </div>
                 <div className="header-actions">
+                    {onBack && (
+                        <img
+                            src={logo}
+                            alt="Back to Menu"
+                            className="header-logo-clickable"
+                            onClick={onBack}
+                            title="Back to Menu"
+                        />
+                    )}
                     <span className="username">Welcome, {username}</span>
                     <button className="logout-btn" onClick={onLogout}>Logout</button>
                 </div>
@@ -165,7 +178,7 @@ export function ConferenceList({ username, onSelectConference, onLogout }: Confe
                     </div>
                 ) : (
                     conferences.map((conf) => (
-                        <div key={conf._id} className="conference-card" onClick={() => onSelectConference(conf)}>
+                        <div key={conf._id} className="conference-card">
                             <div className="card-header">
                                 <h3>{conf.name}</h3>
                             </div>
@@ -177,7 +190,12 @@ export function ConferenceList({ username, onSelectConference, onLogout }: Confe
                                     <strong>Location:</strong> {conf.location}
                                 </p>
                             </div>
-                            <button className="view-btn">View Details →</button>
+                            <button 
+                                className="view-btn"
+                                onClick={() => onSelectConference(conf)}
+                            >
+                                View Details →
+                            </button>
                         </div>
                     ))
                 )}

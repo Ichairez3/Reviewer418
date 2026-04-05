@@ -10,6 +10,13 @@ interface SubmissionPageProps {
     onBackToMain: () => void
 }
 
+interface Conference {
+    _id: string
+    name: string
+    date: string
+    location: string
+}
+
 interface Submission {
     _id: string
     originalName: string
@@ -21,6 +28,8 @@ interface Submission {
 
 export function SubmissionPage({ username, email, onLogout, onBackToMain }: SubmissionPageProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const [selectedConference, setSelectedConference] = useState<string>('')
+    const [conferences, setConferences] = useState<Conference[]>([])
     const [isVerifying, setIsVerifying] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
     const [showAccountModal, setShowAccountModal] = useState(false)
@@ -36,6 +45,7 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
 
     useEffect(() => {
         fetchSubmissions()
+        fetchConferences()
     }, [email])
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +53,18 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
         if (file) {
             setSelectedFile(file)
             console.log('File selected:', file.name)
+        }
+    }
+
+    const fetchConferences = async () => {
+        try {
+            const response = await fetch('/api/conferences')
+            if (response.ok) {
+                const data = await response.json()
+                setConferences(data)
+            }
+        } catch (err) {
+            console.error('Failed to fetch conferences:', err)
         }
     }
 
@@ -216,7 +238,28 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
                                 <div className="upload-container">
                                     <h2>Upload Your Paper</h2>
                                     <p>Select a PDF, DOC, DOCX, or TXT file to submit</p>
-                                    <button className="submit-btn" onClick={handleTurnInClick}>
+                                    
+                                    <div className="conference-selector">
+                                        <label htmlFor="conference">Select Conference</label>
+                                        <select 
+                                            id="conference"
+                                            value={selectedConference}
+                                            onChange={(e) => setSelectedConference(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">-- Choose a conference --</option>
+                                            {conferences.map((conf) => (
+                                                <option key={conf._id} value={conf._id}>
+                                                    {conf.name} ({new Date(conf.date).toLocaleDateString()})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {conferences.length === 0 && (
+                                            <p className="no-conferences-message">No conferences available</p>
+                                        )}
+                                    </div>
+                                    
+                                    <button className="submit-btn" onClick={handleTurnInClick} disabled={!selectedConference}>
                                         Choose File
                                     </button>
                                 </div>
@@ -252,6 +295,10 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
                                         <div className="detail-row">
                                             <span className="label">Email:</span>
                                             <span className="value">{email}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">Conference:</span>
+                                            <span className="value">{conferences.find(c => c._id === selectedConference)?.name || 'Not selected'}</span>
                                         </div>
                                         <div className="detail-row">
                                             <span className="label">File Name:</span>

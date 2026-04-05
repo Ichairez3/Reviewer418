@@ -50,6 +50,12 @@
     margin: 2rem 0;
 }
 
+.role-options + .role-button {
+    grid-column: 1 / -1;
+    max-width: 300px;
+    margin: 1rem auto 0;
+}
+
 .role-button {
     padding: 2rem 1rem;
     border: 2px solid #eee;
@@ -84,6 +90,18 @@
 .reviewer-btn:hover {
     border-color: #4a6b2f;
     background: rgba(74, 107, 47, 0.05);
+}
+
+.conferences-btn {
+    border-color: #5a873d;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.conferences-btn:hover {
+    border-color: #5a873d;
+    background: rgba(90, 135, 61, 0.1);
 }
 
 .role-title {

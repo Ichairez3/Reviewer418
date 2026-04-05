@@ -1,25 +1,30 @@
 .conference-detail-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5a873d 0%, #4a6b2f 100%);
     padding: 2rem;
+    position: relative;
 }
 
-.back-btn {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.logo-back-container {
+    display: flex;
+    align-items: center;
     margin-bottom: 2rem;
 }
 
-.back-btn:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-    transform: translateX(-5px);
+.logo-back-btn {
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    border-radius: 50%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.logo-back-btn:hover {
+    transform: scale(1.1);
+    filter: brightness(1.15);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .detail-header {
@@ -48,7 +53,7 @@
 
 .detail-header .submit-btn {
     padding: 0.75rem 1.5rem;
-    background-color: #667eea;
+    background-color: #5a873d;
     color: white;
     border: none;
     border-radius: 4px;
@@ -60,7 +65,38 @@
 }
 
 .detail-header .submit-btn:hover {
-    background-color: #764ba2;
+    background-color: #4a6b2f;
+}
+
+.detail-tabs {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0 1.5rem 0;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.detail-tabs .tab {
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.detail-tabs .tab:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.detail-tabs .tab.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-bottom-color: #fff;
 }
 
 .submissions-section {
@@ -116,7 +152,7 @@
 }
 
 .type-badge.paper {
-    background-color: #667eea;
+    background-color: #5a873d;
 }
 
 .type-badge.poster {
@@ -146,7 +182,7 @@
 }
 
 .view-reviews-btn {
-    background-color: #667eea;
+    background-color: #5a873d;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -158,10 +194,167 @@
 }
 
 .view-reviews-btn:hover {
-    background-color: #764ba2;
+    background-color: #4a6b2f;
 }
 
 .no-submissions {
+    background: white;
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    color: #999;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.users-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem 2rem 2rem;
+}
+
+.users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.users-header h2 {
+    color: white;
+    margin: 0;
+    font-size: 1.75rem;
+}
+
+.add-user-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #5a873d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.add-user-btn:hover {
+    background-color: #4a6b2f;
+}
+
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.user-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.user-info h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.role-badges-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.role-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: white;
+}
+
+.role-badge.organizer {
+    background-color: #5a873d;
+}
+
+.role-badge.reviewer {
+    background-color: #667eea;
+}
+
+.role-badge.submitter {
+    background-color: #51cf66;
+}
+
+.user-item .added-date {
+    color: #999;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.user-item-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+    gap: 1rem;
+}
+
+.delete-user-btn {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.delete-user-btn:hover {
+    background-color: #ff5252;
+}
+
+.delete-user-btn:active {
+    background-color: #e63946;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-user-btn {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.edit-user-btn:hover {
+    background-color: #357abd;
+}
+
+.edit-user-btn:active {
+    background-color: #2c5aa0;
+}
+
+.no-users {
     background: white;
     border-radius: 8px;
     padding: 3rem;
@@ -271,8 +464,8 @@
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #5a873d;
+    box-shadow: 0 0 0 3px rgba(90, 135, 61, 0.1);
 }
 
 .form-actions {
@@ -305,12 +498,12 @@
 }
 
 .submit-form-btn {
-    background-color: #667eea;
+    background-color: #5a873d;
     color: white;
 }
 
 .submit-form-btn:hover {
-    background-color: #764ba2;
+    background-color: #4a6b2f;
 }
 
 @media (max-width: 768px) {
@@ -330,4 +523,99 @@
     .modal {
         width: 95%;
     }
+}
+
+/* User Dropdown Styles */
+.user-dropdown-container {
+    position: relative;
+}
+
+.user-dropdown-container input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.user-dropdown-container input:focus {
+    outline: none;
+    border-color: #5a873d;
+    box-shadow: 0 0 0 3px rgba(90, 135, 61, 0.1);
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.user-item-option {
+    padding: 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+    color: black;
+}
+
+.user-item-option:hover {
+    background-color: #f5f5f5;
+}
+
+.user-item-option:last-child {
+    border-bottom: none;
+}
+
+.no-results {
+    padding: 1rem;
+    text-align: center;
+    color: #999;
+}
+
+/* Role Buttons Group */
+.role-buttons-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.role-btn {
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #ddd;
+    background: white;
+    color: #333;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.role-btn:hover {
+    border-color: #5a873d;
+    background-color: rgba(90, 135, 61, 0.05);
+}
+
+.role-btn.active {
+    background-color: #5a873d;
+    color: white;
+    border-color: #5a873d;
+    box-shadow: 0 2px 8px rgba(90, 135, 61, 0.3);
+}
+
+.selected-roles {
+    margin-top: 0.75rem;
+    color: #5a873d;
+    font-size: 0.9rem;
+    font-weight: 500;
 }

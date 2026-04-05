@@ -371,6 +371,56 @@
     border-top: 1px solid #eee;
 }
 
+/* Conference Selector */
+.conference-selector {
+    margin: 1.5rem 2rem 0;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.conference-selector label {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.conference-selector select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    background: white;
+    cursor: pointer;
+    max-width: 400px;
+    margin: 0 auto;
+    display: block;
+    box-sizing: border-box;
+}
+
+.conference-selector select:focus {
+    outline: none;
+    border-color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.conference-selector select:disabled {
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+    color: #999;
+}
+
+.no-conferences-message {
+    color: white;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+}
+
 .cancel-btn,
 .submit-btn {
     flex: 1;

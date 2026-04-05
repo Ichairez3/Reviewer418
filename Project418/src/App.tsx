@@ -3,15 +3,27 @@ import { Login } from './Login'
 import { RoleSelection } from './RoleSelection'
 import { SubmissionPage } from './SubmissionPage'
 import { ReviewerPage } from './ReviewerPage'
+import { ConferenceList } from './ConferenceList'
+import { ConferenceDetail } from './ConferenceDetail'
 import './App.css'
 
 type UserRole = 'submitter' | 'reviewer' | null
+
+interface Conference {
+    _id: string
+    name: string
+    date: string
+    location: string
+    createdBy?: string
+}
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [userRole, setUserRole] = useState<UserRole>(null)
+    const [viewingConferences, setViewingConferences] = useState(false)
+    const [selectedConference, setSelectedConference] = useState<Conference | null>(null)
 
     useEffect(() => {
         const storedUsername = localStorage.getItem('username')
@@ -45,10 +57,28 @@ function App() {
         localStorage.removeItem('userRole')
     }
 
+    const handleViewConferences = () => {
+        setViewingConferences(true)
+    }
+
+    const handleSelectConference = (conference: Conference) => {
+        setSelectedConference(conference)
+    }
+
+    const handleBackFromConferenceDetail = () => {
+        setSelectedConference(null)
+    }
+
+    const handleBackFromConferences = () => {
+        setSelectedConference(null)
+        setViewingConferences(false)
+    }
+
     const handleLogout = () => {
         setIsLoggedIn(false)
         setUsername('')
         setUserRole(null)
+        setViewingConferences(false)
         localStorage.clear()
     }
 
@@ -56,10 +86,26 @@ function App() {
         <>
             {!isLoggedIn ? (
                 <Login onLogin={handleLogin} />
+            ) : viewingConferences ? (
+                selectedConference ? (
+                    <ConferenceDetail 
+                        conference={selectedConference}
+                        username={username}
+                        onBack={handleBackFromConferenceDetail}
+                    />
+                ) : (
+                    <ConferenceList 
+                        username={username}
+                        onSelectConference={handleSelectConference}
+                        onBack={handleBackFromConferences}
+                        onLogout={handleLogout}
+                    />
+                )
             ) : !userRole ? (
                 <RoleSelection 
                     username={username}
                     onSelectRole={handleRoleSelect}
+                    onViewConferences={handleViewConferences}
                     onLogout={handleLogout}
                 />
             ) : userRole === 'submitter' ? (

@@ -91,6 +91,10 @@ const conferenceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  createdBy: {
+    type: String,
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -186,6 +190,35 @@ const reviewSchema = new mongoose.Schema({
 
 const Review = mongoose.model("Review", reviewSchema);
 
+// ConferenceUser schema - tracks users and their roles in each conference
+const conferenceUserSchema = new mongoose.Schema({
+  conference: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Conference',
+    required: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  username: {
+    type: String,
+    required: true
+  },
+  roles: {
+    type: [String],
+    enum: ['organizer', 'reviewer', 'submitter'],
+    default: ['reviewer']
+  },
+  addedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const ConferenceUser = mongoose.model("ConferenceUser", conferenceUserSchema);
+
 // Simple test route
 app.get("/", (req, res) => {
   res.send("Server is running");
@@ -240,11 +273,25 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Get all users (for user management in conferences)
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await User.find({}, { username: 1, _id: 1, email: 1 }).sort({ username: 1 });
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Conference routes
 app.post("/api/conferences", async (req, res) => {
   try {
-    const { name, date, location } = req.body;
-    const conference = new Conference({ name, date, location });
+    const { name, date, location, createdBy } = req.body;
+    if (!createdBy) {
+      return res.status(400).json({ error: 'createdBy username is required' });
+    }
+    const conference = new Conference({ name, date, location, createdBy });
     const saved = await conference.save();
     res.status(201).json(saved);
   } catch (error) {
@@ -268,6 +315,161 @@ app.get("/api/conferences/:id", async (req, res) => {
       return res.status(404).json({ error: "Conference not found" });
     }
     res.json(conference);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get users in a conference
+app.get("/api/conferences/:conferenceId/users", async (req, res) => {
+  try {
+    const conferenceUsers = await ConferenceUser.find({ 
+      conference: req.params.conferenceId 
+    }).sort({ addedAt: -1 });
+    res.json(conferenceUsers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add user to conference
+app.post("/api/conferences/:conferenceId/users", async (req, res) => {
+  try {
+    const { username, roles, requestedBy } = req.body;
+    const { conferenceId } = req.params;
+
+    if (!username || !roles || roles.length === 0) {
+      return res.status(400).json({ error: 'Username and at least one role are required' });
+    }
+
+    // Check if requester is an organizer or conference creator
+    const conference = await Conference.findById(conferenceId);
+    if (!conference) {
+      return res.status(404).json({ error: 'Conference not found' });
+    }
+
+    const requesterConferenceUser = await ConferenceUser.findOne({
+      conference: conferenceId,
+      username: requestedBy
+    });
+
+    const isCreator = conference.createdBy === requestedBy;
+    const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
+
+    if (!isCreator && !isOrganizer) {
+      return res.status(403).json({ error: 'Only conference creators and organizers can add users' });
+    }
+
+    // Find the user by username
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if user is already in conference
+    const existingConferenceUser = await ConferenceUser.findOne({
+      conference: conferenceId,
+      userId: user._id
+    });
+
+    if (existingConferenceUser) {
+      // Update existing user's roles
+      existingConferenceUser.roles = roles;
+      const updated = await existingConferenceUser.save();
+      return res.json(updated);
+    }
+
+    // Create new conference user entry
+    const conferenceUser = new ConferenceUser({
+      conference: conferenceId,
+      userId: user._id,
+      username: user.username,
+      roles: roles
+    });
+
+    const saved = await conferenceUser.save();
+    res.status(201).json(saved);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete user from conference
+app.delete("/api/conferences/:conferenceId/users/:userId", async (req, res) => {
+  try {
+    const { conferenceId, userId } = req.params;
+    const { requestedBy } = req.body;
+
+    // Check if requester is an organizer or conference creator
+    const conference = await Conference.findById(conferenceId);
+    if (!conference) {
+      return res.status(404).json({ error: 'Conference not found' });
+    }
+
+    const requesterConferenceUser = await ConferenceUser.findOne({
+      conference: conferenceId,
+      username: requestedBy
+    });
+
+    const isCreator = conference.createdBy === requestedBy;
+    const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
+
+    if (!isCreator && !isOrganizer) {
+      return res.status(403).json({ error: 'Only conference creators and organizers can remove users' });
+    }
+
+    // Delete the conference user
+    const result = await ConferenceUser.findByIdAndDelete(userId);
+    if (!result) {
+      return res.status(404).json({ error: 'User not found in conference' });
+    }
+
+    res.json({ message: 'User removed successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update user roles in a conference
+app.put("/api/conferences/:conferenceId/users/:userId", async (req, res) => {
+  try {
+    const { conferenceId, userId } = req.params;
+    const { roles, requestedBy } = req.body;
+
+    if (!roles || !Array.isArray(roles) || roles.length === 0) {
+      return res.status(400).json({ error: 'At least one role is required' });
+    }
+
+    // Check if requester is an organizer or conference creator
+    const conference = await Conference.findById(conferenceId);
+    if (!conference) {
+      return res.status(404).json({ error: 'Conference not found' });
+    }
+
+    const requesterConferenceUser = await ConferenceUser.findOne({
+      conference: conferenceId,
+      username: requestedBy
+    });
+
+    const isCreator = conference.createdBy === requestedBy;
+    const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
+
+    if (!isCreator && !isOrganizer) {
+      return res.status(403).json({ error: 'Only conference creators and organizers can edit user roles' });
+    }
+
+    // Update the conference user's roles
+    const conferenceUser = await ConferenceUser.findByIdAndUpdate(
+      userId,
+      { roles: roles },
+      { new: true }
+    );
+
+    if (!conferenceUser) {
+      return res.status(404).json({ error: 'User not found in conference' });
+    }
+
+    res.json(conferenceUser);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

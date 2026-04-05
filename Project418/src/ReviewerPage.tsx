@@ -9,6 +9,13 @@ interface ReviewerPageProps {
     onBackToMain: () => void
 }
 
+interface Conference {
+    _id: string
+    name: string
+    date: string
+    location: string
+}
+
 interface Submission {
     _id: string
     title: string
@@ -32,6 +39,8 @@ interface Review {
 export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageProps) {
     const [submissions, setSubmissions] = useState<Submission[]>([])
     const [reviews, setReviews] = useState<Review[]>([])
+    const [conferences, setConferences] = useState<Conference[]>([])
+    const [selectedConference, setSelectedConference] = useState<string>('')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState<'available' | 'completed'>('available')
@@ -45,14 +54,41 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
     const [showSettingsModal, setShowSettingsModal] = useState(false)
 
     useEffect(() => {
-        fetchData()
+        fetchConferences()
     }, [])
 
+    useEffect(() => {
+        if (selectedConference) {
+            fetchData()
+        } else {
+            setSubmissions([])
+            setReviews([])
+        }
+    }, [selectedConference])
+
+    const fetchConferences = async () => {
+        try {
+            const response = await fetch('/api/conferences')
+            if (response.ok) {
+                const data = await response.json()
+                setConferences(data)
+            }
+        } catch (err) {
+            console.error('Failed to fetch conferences:', err)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const fetchData = async () => {
+        if (!selectedConference) {
+            setLoading(false)
+            return
+        }
         try {
             const [submissionsRes, reviewsRes] = await Promise.all([
-                fetch('/api/submissions'),
-                fetch('/api/reviews') // This would need to be updated to filter by reviewer
+                fetch(`/api/conferences/${selectedConference}/submissions`),
+                fetch(`/api/conferences/${selectedConference}/reviews`)
             ])
 
             if (submissionsRes.ok) {
@@ -151,6 +187,29 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
             {error && <div className="error-message">{error}</div>}
 
             <div className="reviewer-content">
+                {!selectedConference && (
+                    <div className="conference-selector">
+                        <label htmlFor="conference">Select Conference to Review</label>
+                        <select 
+                            id="conference"
+                            value={selectedConference}
+                            onChange={(e) => setSelectedConference(e.target.value)}
+                        >
+                            <option value="">-- Choose a conference --</option>
+                            {conferences.map((conf) => (
+                                <option key={conf._id} value={conf._id}>
+                                    {conf.name} ({new Date(conf.date).toLocaleDateString()})
+                                </option>
+                            ))}
+                        </select>
+                        {conferences.length === 0 && (
+                            <p className="no-conferences-message">No conferences available</p>
+                        )}
+                    </div>
+                )}
+
+                {selectedConference && (
+                    <>
                 <div className="tabs">
                     <button 
                         className={`tab ${activeTab === 'available' ? 'active' : ''}`}
@@ -222,6 +281,8 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
                             </div>
                         )}
                     </div>
+                )}
+                    </>
                 )}
             </div>
 
