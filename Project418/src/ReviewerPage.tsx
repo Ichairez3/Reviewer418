@@ -5,6 +5,7 @@ import logo from './assets/logo.png'
 
 interface ReviewerPageProps {
     username: string
+    email: string
     onLogout: () => void
     onBackToMain: () => void
 }
@@ -18,25 +19,26 @@ interface Conference {
 
 interface Submission {
     _id: string
-    title: string
-    authors: string
-    type: 'Paper' | 'Poster' | 'Workshop'
-    submittedAt: string
+    originalName: string
+    fileName: string
+    fileSize: number
+    uploadedAt: string
+    submitterEmail: string
 }
 
 interface Review {
     _id: string
     submission: {
         _id: string
-        title: string
-        authors: string
+        fileName: string
+        submitterEmail: string
     }
     score: number
     comments: string
     submittedAt: string
 }
 
-export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageProps) {
+export function ReviewerPage({ username, email, onLogout, onBackToMain }: ReviewerPageProps) {
     const [submissions, setSubmissions] = useState<Submission[]>([])
     const [reviews, setReviews] = useState<Review[]>([])
     const [conferences, setConferences] = useState<Conference[]>([])
@@ -52,8 +54,18 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
     const [showReviewForm, setShowReviewForm] = useState(false)
     const [showAccountModal, setShowAccountModal] = useState(false)
     const [showSettingsModal, setShowSettingsModal] = useState(false)
+    const [submissionHistory, setSubmissionHistory] = useState<Array<{
+        // id: string
+        // filename: string
+        // size: string
+        // email: string
+        // timestamp: string
+        submission: Submission
+    }>>([])
+    var testing = 0
 
     useEffect(() => {
+        fetchSubmissions()
         fetchConferences()
     }, [])
 
@@ -65,6 +77,28 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
             setReviews([])
         }
     }, [selectedConference])
+
+    const fetchSubmissions = async () => {
+        try {
+            const response = await fetch('/api/papers')
+            if (response.ok) {
+                const papers = await response.json()
+                const userPapers = papers.filter((paper: Submission) => paper.submitterEmail === email)
+                const formatted = userPapers.map((paper: Submission) => ({
+                    // id: paper._id,
+                    // filename: paper.originalName,
+                    // size: formatFileSize(paper.fileSize),
+                    // email: paper.submitterEmail,
+                    // timestamp: new Date(paper.uploadedAt).toLocaleString(),
+                    submission: paper
+                }))
+                setSubmissionHistory(formatted)
+                console.log('worked')
+            }
+        } catch (err) {
+            console.error('Failed to fetch submissions:', err)
+        }
+    }
 
     const fetchConferences = async () => {
         try {
@@ -148,6 +182,10 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
         setShowSettingsModal(false)
     }
 
+    const formatFileSize = (bytes: number) => {
+        return (bytes / 1024).toFixed(2) + 'KB'
+    }
+
     const handleShowAccount = () => {
         setShowAccountModal(true)
     }
@@ -215,7 +253,7 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
                         className={`tab ${activeTab === 'available' ? 'active' : ''}`}
                         onClick={() => setActiveTab('available')}
                     >
-                        Available Submissions ({submissions.length})
+                        Available Submissions ({submissionHistory.length})
                     </button>
                     <button 
                         className={`tab ${activeTab === 'completed' ? 'active' : ''}`}
@@ -228,24 +266,24 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
                 {activeTab === 'available' && (
                     <div className="submissions-section">
                         <h2>Submissions to Review</h2>
-                        {submissions.length === 0 ? (
+                        {submissionHistory.length === 0 ? (
                             <div className="empty-state">
                                 <p>No submissions available for review</p>
                             </div>
                         ) : (
                             <div className="submissions-grid">
-                                {submissions.map(sub => (
-                                    <div key={sub._id} className="submission-card">
+                                {submissionHistory.map(sub => (
+                                    <div key={sub.submission._id} className="submission-card">
                                         <div className="card-header">
-                                            <h3>{sub.title}</h3>
-                                            <span className={`type-badge ${sub.type.toLowerCase()}`}>{sub.type}</span>
+                                            <h3>{sub.submission.fileName}</h3>
+                                            <span className={ 'Paper'/*`type-badge ${sub.type.toLowerCase()}`*/ }></span>
                                         </div>
-                                        <p className="authors">Authors: {sub.authors}</p>
-                                        <p className="date">Submitted: {new Date(sub.submittedAt).toLocaleDateString()}</p>
+                                        <p className="authors">Authors: {sub.submission.submitterEmail}</p>
+                                        <p className="date">Submitted: {new Date(sub.submission.uploadedAt).toLocaleDateString()}</p>
                                         <button 
                                             className="review-btn"
                                             onClick={() => {
-                                                setSelectedSubmission(sub)
+                                                setSelectedSubmission(sub.submission)
                                                 setShowReviewForm(true)
                                             }}
                                         >
@@ -270,10 +308,10 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
                                 {reviews.map(review => (
                                     <div key={review._id} className="review-card">
                                         <div className="review-header">
-                                            <h3>{review.submission.title}</h3>
+                                            <h3>{review.submission.fileName}</h3>
                                             <span className="score">Score: {review.score}/10</span>
                                         </div>
-                                        <p className="authors">Authors: {review.submission.authors}</p>
+                                        <p className="authors">Authors: {review.submission.submitterEmail}</p>
                                         <p className="comments">{review.comments}</p>
                                         <p className="date">{new Date(review.submittedAt).toLocaleDateString()}</p>
                                     </div>
@@ -290,7 +328,7 @@ export function ReviewerPage({ username, onLogout, onBackToMain }: ReviewerPageP
                 <div className="modal-overlay" onClick={() => setShowReviewForm(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>Review: {selectedSubmission.title}</h3>
+                            <h3>Review: {selectedSubmission.fileName}</h3>
                             <button className="close-btn" onClick={() => setShowReviewForm(false)}>×</button>
                         </div>
                         <form onSubmit={handleSubmitReview} className="review-form">

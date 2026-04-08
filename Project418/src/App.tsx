@@ -118,6 +118,7 @@ function App() {
             ) : (
                 <ReviewerPage 
                     username={username} 
+                    email={email}
                     onLogout={handleLogout}
                     onBackToMain={handleBackToRoleSelection}
                 />
