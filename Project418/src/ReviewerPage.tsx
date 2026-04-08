@@ -54,18 +54,17 @@ export function ReviewerPage({ username, email, onLogout, onBackToMain }: Review
     const [showReviewForm, setShowReviewForm] = useState(false)
     const [showAccountModal, setShowAccountModal] = useState(false)
     const [showSettingsModal, setShowSettingsModal] = useState(false)
-    const [submissionHistory, setSubmissionHistory] = useState<Array<{
+    const [submissionHistory, setSubmissionHistory] = useState<Array<{//called submissionHistory as I built it from the code in the submission page, and at this point I would have to change a lot variable names.
         // id: string
         // filename: string
         // size: string
         // email: string
         // timestamp: string
-        submission: Submission
+        submission: Submission //making an array of submissions instead of an array of the parts that make a submission seemed simpler.
     }>>([])
-    var testing = 0
 
     useEffect(() => {
-        fetchSubmissions()
+        fetchSubmissions()//actually build the submission block
         fetchConferences()
     }, [])
 
@@ -182,7 +181,7 @@ export function ReviewerPage({ username, email, onLogout, onBackToMain }: Review
         setShowSettingsModal(false)
     }
 
-    const formatFileSize = (bytes: number) => {
+    const formatFileSize = (bytes: number) => {//I believe this was in the submission page to store the file size in an already formatted form, but since I made it so the array holds the entire submission object, it goes unused. may remove later.
         return (bytes / 1024).toFixed(2) + 'KB'
     }
 
