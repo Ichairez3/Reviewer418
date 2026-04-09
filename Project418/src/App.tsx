@@ -6,6 +6,7 @@ import { ReviewerPage } from './ReviewerPage'
 import { ConferenceList } from './ConferenceList'
 import { ConferenceDetail } from './ConferenceDetail'
 import './App.css'
+import { set } from 'mongoose'
 
 type UserRole = 'submitter' | 'reviewer' | null
 
@@ -21,6 +22,7 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
+    const [userID, setUserID] = useState('')
     const [userRole, setUserRole] = useState<UserRole>(null)
     const [viewingConferences, setViewingConferences] = useState(false)
     const [selectedConference, setSelectedConference] = useState<Conference | null>(null)
@@ -28,10 +30,12 @@ function App() {
     useEffect(() => {
         const storedUsername = localStorage.getItem('username')
         const storedEmail = localStorage.getItem('email')
+        const storedID = localStorage.getItem('id')
         const storedRole = localStorage.getItem('userRole') as UserRole
         if (storedUsername && storedRole) {
             setUsername(storedUsername)
             setEmail(storedEmail || '')
+            setUserID(storedID || '')
             setUserRole(storedRole)
             setIsLoggedIn(true)
         }
@@ -44,6 +48,10 @@ function App() {
         const storedEmail = localStorage.getItem('email')
         if (storedEmail) {
             setEmail(storedEmail)
+        }
+        const storedID = localStorage.getItem('id')
+        if (storedID) {
+            setUserID(storedID)
         }
     }
 
@@ -74,7 +82,7 @@ function App() {
         setViewingConferences(false)
     }
 
-    const handleLogout = () => {
+    const handleLogout = () => {//might not clear emails and ids??
         setIsLoggedIn(false)
         setUsername('')
         setUserRole(null)
@@ -118,7 +126,7 @@ function App() {
             ) : (
                 <ReviewerPage 
                     username={username} 
-                    email={email}
+                    userID={userID}
                     onLogout={handleLogout}
                     onBackToMain={handleBackToRoleSelection}
                 />

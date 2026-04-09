@@ -5,7 +5,7 @@ import logo from './assets/logo.png'
 
 interface ReviewerPageProps {
     username: string
-    email: string
+    userID: string
     onLogout: () => void
     onBackToMain: () => void
 }
@@ -38,7 +38,7 @@ interface Review {
     submittedAt: string
 }
 
-export function ReviewerPage({ username, email, onLogout, onBackToMain }: ReviewerPageProps) {
+export function ReviewerPage({ username, userID, onLogout, onBackToMain }: ReviewerPageProps) {
     const [submissions, setSubmissions] = useState<Submission[]>([])
     const [reviews, setReviews] = useState<Review[]>([])
     const [conferences, setConferences] = useState<Conference[]>([])
@@ -82,8 +82,7 @@ export function ReviewerPage({ username, email, onLogout, onBackToMain }: Review
             const response = await fetch('/api/papers')
             if (response.ok) {
                 const papers = await response.json()
-                const userPapers = papers.filter((paper: Submission) => paper.submitterEmail === email)
-                const formatted = userPapers.map((paper: Submission) => ({
+                const formatted = papers.map((paper: Submission) => ({
                     // id: paper._id,
                     // filename: paper.originalName,
                     // size: formatFileSize(paper.fileSize),
@@ -154,7 +153,7 @@ export function ReviewerPage({ username, email, onLogout, onBackToMain }: Review
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     submissionId: selectedSubmission._id,
-                    reviewerId: 'current-reviewer-id', // Would come from auth
+                    reviewerId: userID, // Would come from auth <Austin addendum- think I fixed this.>
                     score: reviewForm.score,
                     comments: reviewForm.comments
                 })

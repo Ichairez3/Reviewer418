@@ -9,6 +9,7 @@ interface LoginProps {
 export function Login({ onLogin }: LoginProps) {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [id, setID] = useState('')
     const [email, setEmail] = useState('')
     const [isSignup, setIsSignup] = useState(false)
     const [error, setError] = useState('')
@@ -30,6 +31,14 @@ export function Login({ onLogin }: LoginProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             })
+            
+            const idResponse = await fetch('/api/users')
+            if (idResponse.ok) {
+                const userData = await idResponse.json()
+                const user = userData.find((user: any) => user.username === username)
+                localStorage.setItem('id', user._id)//added for reviewer page
+            }
+            
 
             const data = await response.json()
 
