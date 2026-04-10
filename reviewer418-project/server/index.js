@@ -541,10 +541,10 @@ app.get("/api/reviewers", async (req, res) => {
 // Review routes
 app.post("/api/reviews", async (req, res) => {
   try {
-    const { submissionId, reviewerId, score, comments } = req.body;
+    const { submissionId, reviewer, score, comments } = req.body;
     const review = new Review({
       submission: submissionId,
-      reviewer: reviewerId,
+      reviewer: reviewer,//reviewerid
       score,
       comments
     });
@@ -554,6 +554,16 @@ app.post("/api/reviews", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+app.get("/api/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find();
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 app.get("/api/submissions/:submissionId/reviews", async (req, res) => {
   try {

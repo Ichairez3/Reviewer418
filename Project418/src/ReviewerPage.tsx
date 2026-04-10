@@ -36,6 +36,7 @@ interface Review {
     score: number
     comments: string
     submittedAt: string
+    reviewer: string
 }
 
 export function ReviewerPage({ username, userID, onLogout, onBackToMain }: ReviewerPageProps) {
@@ -62,9 +63,12 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         // timestamp: string
         submission: Submission //making an array of submissions instead of an array of the parts that make a submission seemed simpler.
     }>>([])
+    const [tester, setTester] = useState(5)
 
     useEffect(() => {
+        setTester(3)
         fetchSubmissions()//actually build the submission block
+        fetchReviews()//actually build the reviews block
         fetchConferences()
     }, [])
 
@@ -98,6 +102,28 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         }
     }
 
+    const fetchReviews = async () => {
+        try {
+            const response = await fetch('/api/reviews') 
+            if (response.ok) {
+                const reviewsJson = await response.json()
+                const userReviews = reviewsJson.filter((review: Review) => review.reviewer === userID)
+                const reviewMap = userReviews.map((review: Review) => ({
+                    _id: review._id,
+                    submission: review.submission,
+                    score: review.score,
+                    comments: review.comments,
+                    submittedAt: review.submittedAt,
+                    reviewer: review.reviewer
+                }))
+                setReviews(reviewMap)
+            }
+        } catch (err) {
+            console.error('Failed to fetch reviews:', err)
+        }
+    }
+
+
     const fetchConferences = async () => {
         try {
             const response = await fetch('/api/conferences')
@@ -112,7 +138,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         }
     }
 
-    const fetchData = async () => {
+    const fetchData = async () => {//is this deprecated now that we aren't doing multiple conferences?
         if (!selectedConference) {
             setLoading(false)
             return
@@ -153,7 +179,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     submissionId: selectedSubmission._id,
-                    reviewerId: userID, // Would come from auth <Austin addendum- think I fixed this.>
+                    reviewer: userID, // Would come from auth <Austin addendum- think I fixed this.>
                     score: reviewForm.score,
                     comments: reviewForm.comments
                 })
