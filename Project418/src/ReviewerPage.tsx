@@ -41,7 +41,8 @@ interface Review {
 
 export function ReviewerPage({ username, userID, onLogout, onBackToMain }: ReviewerPageProps) {
     const [submissions, setSubmissions] = useState<Submission[]>([])
-    const [reviews, setReviews] = useState<Review[]>([])
+    const [reviews, setReviews] = useState<Review[]>([])//user's reviews only
+    const [allReviews, setAllReviews] = useState<Review[]>([])//everyone's reviews
     const [conferences, setConferences] = useState<Conference[]>([])
     const [selectedConference, setSelectedConference] = useState<string>('')
     const [loading, setLoading] = useState(true)
@@ -63,12 +64,11 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         // timestamp: string
         submission: Submission //making an array of submissions instead of an array of the parts that make a submission seemed simpler.
     }>>([])
-    const [tester, setTester] = useState(5)
 
     useEffect(() => {
-        setTester(3)
-        fetchSubmissions()//actually build the submission block
-        fetchReviews()//actually build the reviews block
+        fetchSubmissions()//build the submission block
+        fetchReviews()//build the reviews block
+        fetchAllReviews()//build the all reviews block
         fetchConferences()
     }, [])
 
@@ -102,7 +102,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         }
     }
 
-    const fetchReviews = async () => {
+    const fetchReviews = async () => {//reviews for the user
         try {
             const response = await fetch('/api/reviews') 
             if (response.ok) {
@@ -117,6 +117,26 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                     reviewer: review.reviewer
                 }))
                 setReviews(reviewMap)
+            }
+        } catch (err) {
+            console.error('Failed to fetch reviews:', err)
+        }
+    }
+
+    const fetchAllReviews = async () => {//reviews for everyone
+        try {
+            const response = await fetch('/api/reviews') 
+            if (response.ok) {
+                const reviewsJson = await response.json()
+                const reviewMap = reviewsJson.map((review: Review) => ({
+                    _id: review._id,
+                    submission: review.submission,
+                    score: review.score,
+                    comments: review.comments,
+                    submittedAt: review.submittedAt,
+                    reviewer: review.reviewer
+                }))
+                setAllReviews(reviewMap)
             }
         } catch (err) {
             console.error('Failed to fetch reviews:', err)
@@ -329,7 +349,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                             </div>
                         ) : (
                             <div className="reviews-list">
-                                {reviews.map(review => (
+                                {allReviews.map(review => (
                                     <div key={review._id} className="review-card">
                                         <div className="review-header">
                                             <h3>{review.submission.fileName}</h3>
