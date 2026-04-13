@@ -26,7 +26,7 @@ interface Submission {
     submitterEmail: string
 }
 
-export function SubmissionPage({ username, email, onLogout, onBackToMain }: SubmissionPageProps) {
+export function SubmissionPage({ username, email, onLogout/* onlogout goes unused? is that a problem? */, onBackToMain }: SubmissionPageProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [selectedConference, setSelectedConference] = useState<string>('')
     const [conferences, setConferences] = useState<Conference[]>([])
@@ -35,7 +35,7 @@ export function SubmissionPage({ username, email, onLogout, onBackToMain }: Subm
     const [showAccountModal, setShowAccountModal] = useState(false)
     const [showSettingsModal, setShowSettingsModal] = useState(false)
     const [activeTab, setActiveTab] = useState<'submit' | 'history'>('submit')
-    const [submissionHistory, setSubmissionHistory] = useState<Array<{
+    const [submissionHistory, setSubmissionHistory] = useState<Array<{//thinking about applying the changes I made in the reviewer page code.
         id: string
         filename: string
         size: string
