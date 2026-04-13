@@ -349,7 +349,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                             </div>
                         ) : (
                             <div className="reviews-list">
-                                {allReviews.map(review => (
+                                {reviews.map(review => (
                                     <div key={review._id} className="review-card">
                                         <div className="review-header">
                                             <h3>{review.submission.fileName}</h3>
