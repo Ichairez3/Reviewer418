@@ -32,9 +32,9 @@ After you do all this the software should be ready to run.
 - You must first start the database connection before you can start the server connection.
 - You should open up a terminal and use it to navigate to the file given below. You can navigate using cd .. to go back a file and cd ______ to select specific files. You can also type *ls* and it will show you what files are available in the file your currently in
 
-*example: I use cd .. then cd reviewer418-project/server to navigate to the server folder.*
-
 **\Reviewer418\reviewer418-project\server**
+
+*example: If you start in the ***\Reviewer418\Project418*** file you will do cd .. to go back to ***\Reviewer418*** then type ***cd reviewer418-project/server*** to navigate to the server folder.*
 
 - Then in the terminal, after you've navigated to the file, type *npm run dev* and wait for it to say **MangoDB Connected**
 - After you've succesfully connected the Database, use the terminal again to navigate to the folder given below.
