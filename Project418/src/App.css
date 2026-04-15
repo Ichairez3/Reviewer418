@@ -12,6 +12,52 @@ html, body {
   padding: 0;
 }
 
+.system-role-indicator {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1400;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(6px);
+}
+
+.system-role-indicator.owner {
+  background: linear-gradient(135deg, rgba(34, 59, 22, 0.96) 0%, rgba(90, 135, 61, 0.96) 100%);
+  border: 1px solid rgba(225, 241, 210, 0.28);
+}
+
+.system-role-indicator.admin {
+  background: linear-gradient(135deg, rgba(63, 97, 41, 0.96) 0%, rgba(106, 160, 72, 0.96) 100%);
+  border: 1px solid rgba(225, 241, 210, 0.24);
+}
+
+.system-role-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: #f3ffe8;
+  box-shadow: 0 0 0 4px rgba(243, 255, 232, 0.16);
+}
+
+@media (max-width: 640px) {
+  .system-role-indicator {
+    top: auto;
+    bottom: 1rem;
+    right: 1rem;
+    font-size: 0.82rem;
+    padding: 0.65rem 0.9rem;
+  }
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

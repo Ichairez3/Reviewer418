@@ -3,7 +3,7 @@ import './Login.css'
 import logo from './assets/logo.png'
 
 interface LoginProps {
-    onLogin: (username: string) => void
+    onLogin: (username: string, systemRole: 'owner' | 'admin' | 'user') => void
     onBack: () => void
 }
 
@@ -50,7 +50,7 @@ export function Login({ onLogin, onBack }: LoginProps) {
                 } else if (data.email) {
                     localStorage.setItem('email', data.email)
                 }
-                onLogin(username)
+                onLogin(username, data.systemRole || 'user')
             } else {
                 setError(data.error || 'Authentication failed')
             }

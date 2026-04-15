@@ -101,6 +101,12 @@
     font-size: 1.75rem;
 }
 
+.create-restriction {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
 .create-btn {
     padding: 0.75rem 1.5rem;
     background-color: #51cf66;
@@ -146,6 +152,10 @@
     background: linear-gradient(135deg, #5a873d 0%, #4a6b2f 100%);
     color: white;
     padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
 }
 
 .card-header h3 {
@@ -186,6 +196,49 @@
 
 .view-btn:hover {
     background-color: #4a6b2f;
+}
+
+.hidden-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.conference-admin-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0 1rem 1rem;
+}
+
+.visibility-btn,
+.delete-conference-btn {
+    flex: 1;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.visibility-btn {
+    background-color: #6ba243;
+}
+
+.visibility-btn:hover {
+    border-color: transparent;
+    background-color: #5a873d;
+}
+
+.delete-conference-btn {
+    background-color: #d9534f;
+}
+
+.delete-conference-btn:hover {
+    border-color: transparent;
+    background-color: #c84542;
 }
 
 .error-message {

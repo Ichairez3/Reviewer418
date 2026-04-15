@@ -6,6 +6,7 @@ import logo from './assets/logo.png'
 interface ReviewerPageProps {
     username: string
     userID: string
+    systemRole: 'owner' | 'admin' | 'user'
     onLogout: () => void
     onBackToMain: () => void
 }
@@ -39,8 +40,8 @@ interface Review {
     reviewer: string
 }
 
-export function ReviewerPage({ username, userID, onLogout, onBackToMain }: ReviewerPageProps) {
-    const [reviews, setReviews] = useState<Review[]>([])//user's reviews only
+export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToMain }: ReviewerPageProps) {
+    const [reviews, setReviews] = useState<Review[]>([])
     const [conferences, setConferences] = useState<Conference[]>([])
     const [selectedConference, setSelectedConference] = useState<string>('')
     const [loading, setLoading] = useState(true)
@@ -54,18 +55,12 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
     const [showReviewForm, setShowReviewForm] = useState(false)
     const [showAccountModal, setShowAccountModal] = useState(false)
     const [showSettingsModal, setShowSettingsModal] = useState(false)
-    const [submissionHistory, setSubmissionHistory] = useState<Array<{//called submissionHistory as I built it from the code in the submission page, and at this point I would have to change a lot variable names.
-        // id: string
-        // filename: string
-        // size: string
-        // email: string
-        // timestamp: string
-        submission: Submission //making an array of submissions instead of an array of the parts that make a submission seemed simpler.
-    }>>([])
+    const [deletingSubmissionId, setDeletingSubmissionId] = useState<string | null>(null)
+    const [submissionHistory, setSubmissionHistory] = useState<Array<{ submission: Submission }>>([])
 
     useEffect(() => {
-        fetchSubmissions()//build the submission block
-        fetchReviews()//build the reviews block
+        fetchSubmissions()
+        fetchReviews()
         fetchConferences()
     }, [])
 
@@ -74,6 +69,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
             setError('')
         } else {
             setReviews([])
+            fetchReviews()
         }
     }, [selectedConference])
 
@@ -83,24 +79,18 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
             if (response.ok) {
                 const papers = await response.json()
                 const formatted = papers.map((paper: Submission) => ({
-                    // id: paper._id,
-                    // filename: paper.originalName,
-                    // size: formatFileSize(paper.fileSize),
-                    // email: paper.submitterEmail,
-                    // timestamp: new Date(paper.uploadedAt).toLocaleString(),
                     submission: paper
                 }))
                 setSubmissionHistory(formatted)
-                console.log('worked')
             }
         } catch (err) {
             console.error('Failed to fetch submissions:', err)
         }
     }
 
-    const fetchReviews = async () => {//reviews for the user
+    const fetchReviews = async () => {
         try {
-            const response = await fetch('/api/reviews') 
+            const response = await fetch('/api/reviews')
             if (response.ok) {
                 const reviewsJson = await response.json()
                 const userReviews = reviewsJson.filter((review: Review) => review.reviewer === userID)
@@ -146,7 +136,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     submissionId: selectedSubmission._id,
-                    reviewer: userID, // Would come from auth <Austin addendum- think I fixed this.>
+                    reviewer: userID,
                     score: reviewForm.score,
                     comments: reviewForm.comments
                 })
@@ -168,6 +158,39 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         }
     }
 
+    const handleDeleteSubmission = async (submissionId: string, fileName: string) => {
+        if (!window.confirm(`Delete submission "${fileName}"? This cannot be undone.`)) {
+            return
+        }
+
+        setDeletingSubmissionId(submissionId)
+        try {
+            const response = await fetch(`/api/papers/${submissionId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    requestedBy: username
+                })
+            })
+
+            const data = await response.json()
+            if (!response.ok) {
+                setError(data.error || 'Failed to delete submission')
+                return
+            }
+
+            setSubmissionHistory((currentSubmissions) =>
+                currentSubmissions.filter((entry) => entry.submission._id !== submissionId)
+            )
+            setError('')
+        } catch (err) {
+            console.error('Error deleting submission:', err)
+            setError('Unable to reach server')
+        } finally {
+            setDeletingSubmissionId(null)
+        }
+    }
+
     const closeModals = () => {
         setShowAccountModal(false)
         setShowSettingsModal(false)
@@ -182,6 +205,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
     }
 
     const getPaperDownloadUrl = (submission: Submission) => `/api/papers/${submission._id}`
+    const canDeleteSubmissions = systemRole === 'owner' || systemRole === 'admin'
 
     if (loading) {
         return <div className="loading">Loading...</div>
@@ -191,9 +215,9 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         <div className="reviewer-container">
             <div className="reviewer-header">
                 <div className="header-content">
-                    <img 
-                        src={logo} 
-                        alt="Reviewer418 Logo" 
+                    <img
+                        src={logo}
+                        alt="Reviewer418 Logo"
                         className="header-logo"
                         onClick={onBackToMain}
                         style={{ cursor: 'pointer' }}
@@ -202,7 +226,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                     <h1>Reviewer418</h1>
                 </div>
                 <div className="header-actions">
-                    <Menu 
+                    <Menu
                         username={username}
                         onShowPreviousSubmissions={() => setActiveTab('completed')}
                         onShowAccount={handleShowAccount}
@@ -217,7 +241,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                 {!selectedConference && (
                     <div className="conference-selector">
                         <label htmlFor="conference">Select Conference to Review</label>
-                        <select 
+                        <select
                             id="conference"
                             value={selectedConference}
                             onChange={(e) => setSelectedConference(e.target.value)}
@@ -237,89 +261,97 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
 
                 {selectedConference && (
                     <>
-                <div className="tabs">
-                    <button 
-                        className={`tab ${activeTab === 'available' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('available')}
-                    >
-                        Available Submissions ({submissionHistory.length})
-                    </button>
-                    <button 
-                        className={`tab ${activeTab === 'completed' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('completed')}
-                    >
-                        My Reviews ({reviews.length})
-                    </button>
-                </div>
+                        <div className="tabs">
+                            <button
+                                className={`tab ${activeTab === 'available' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('available')}
+                            >
+                                Available Submissions ({submissionHistory.length})
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'completed' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('completed')}
+                            >
+                                My Reviews ({reviews.length})
+                            </button>
+                        </div>
 
-                {activeTab === 'available' && (
-                    <div className="submissions-section">
-                        <h2>Submissions to Review</h2>
-                        {submissionHistory.length === 0 ? (
-                            <div className="empty-state">
-                                <p>No submissions available for review</p>
-                            </div>
-                        ) : (
-                            <div className="submissions-grid">
-                                {submissionHistory.map(sub => (
-                                    <div key={sub.submission._id} className="submission-card">
-                                        <div className="card-header">
-                                            <h3>{sub.submission.originalName || sub.submission.fileName}</h3>
-                                            <span className={ 'Paper'/*`type-badge ${sub.type.toLowerCase()}`*/ }></span>
-                                        </div>
-                                        <p className="authors">Authors: {sub.submission.submitterEmail}</p>
-                                        <p className="date">Submitted: {new Date(sub.submission.uploadedAt).toLocaleDateString()}</p>
-                                        <div className="submission-actions">
-                                            <a
-                                                className="download-btn"
-                                                href={getPaperDownloadUrl(sub.submission)}
-                                                download={sub.submission.originalName || sub.submission.fileName}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                Download
-                                            </a>
-                                        <button 
-                                            className="review-btn"
-                                            onClick={() => {
-                                                setSelectedSubmission(sub.submission)
-                                                setShowReviewForm(true)
-                                            }}
-                                        >
-                                            Review Now →
-                                        </button>
-                                        </div>
+                        {activeTab === 'available' && (
+                            <div className="submissions-section">
+                                <h2>Submissions to Review</h2>
+                                {submissionHistory.length === 0 ? (
+                                    <div className="empty-state">
+                                        <p>No submissions available for review</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    <div className="submissions-grid">
+                                        {submissionHistory.map((sub) => (
+                                            <div key={sub.submission._id} className="submission-card">
+                                                <div className="card-header">
+                                                    <h3>{sub.submission.originalName || sub.submission.fileName}</h3>
+                                                </div>
+                                                <p className="authors">Authors: {sub.submission.submitterEmail}</p>
+                                                <p className="date">Submitted: {new Date(sub.submission.uploadedAt).toLocaleDateString()}</p>
+                                                <div className="submission-actions">
+                                                    <a
+                                                        className="download-btn"
+                                                        href={getPaperDownloadUrl(sub.submission)}
+                                                        download={sub.submission.originalName || sub.submission.fileName}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                    >
+                                                        Download
+                                                    </a>
+                                                    <button
+                                                        className="review-btn"
+                                                        onClick={() => {
+                                                            setSelectedSubmission(sub.submission)
+                                                            setShowReviewForm(true)
+                                                        }}
+                                                    >
+                                                        Review Now {'->'}
+                                                    </button>
+                                                    {canDeleteSubmissions && (
+                                                        <button
+                                                            className="delete-submission-btn"
+                                                            onClick={() => handleDeleteSubmission(sub.submission._id, sub.submission.originalName || sub.submission.fileName)}
+                                                            disabled={deletingSubmissionId === sub.submission._id}
+                                                        >
+                                                            {deletingSubmissionId === sub.submission._id ? 'Deleting...' : 'Delete'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
-                    </div>
-                )}
 
-                {activeTab === 'completed' && (
-                    <div className="reviews-section">
-                        <h2>My Submitted Reviews</h2>
-                        {reviews.length === 0 ? (
-                            <div className="empty-state">
-                                <p>You haven't submitted any reviews yet</p>
-                            </div>
-                        ) : (
-                            <div className="reviews-list">
-                                {reviews.map(review => (
-                                    <div key={review._id} className="review-card">
-                                        <div className="review-header">
-                                            <h3>{review.submission.fileName}</h3>
-                                            <span className="score">Score: {review.score}/10</span>
-                                        </div>
-                                        <p className="authors">Authors: {review.submission.submitterEmail}</p>
-                                        <p className="comments">{review.comments}</p>
-                                        <p className="date">{new Date(review.submittedAt).toLocaleDateString()}</p>
+                        {activeTab === 'completed' && (
+                            <div className="reviews-section">
+                                <h2>My Submitted Reviews</h2>
+                                {reviews.length === 0 ? (
+                                    <div className="empty-state">
+                                        <p>You haven't submitted any reviews yet</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    <div className="reviews-list">
+                                        {reviews.map((review) => (
+                                            <div key={review._id} className="review-card">
+                                                <div className="review-header">
+                                                    <h3>{review.submission.fileName}</h3>
+                                                    <span className="score">Score: {review.score}/10</span>
+                                                </div>
+                                                <p className="authors">Authors: {review.submission.submitterEmail}</p>
+                                                <p className="comments">{review.comments}</p>
+                                                <p className="date">{new Date(review.submittedAt).toLocaleDateString()}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
-                    </div>
-                )}
                     </>
                 )}
             </div>
@@ -329,7 +361,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Review: {selectedSubmission.fileName}</h3>
-                            <button className="close-btn" onClick={() => setShowReviewForm(false)}>×</button>
+                            <button className="close-btn" onClick={() => setShowReviewForm(false)}>x</button>
                         </div>
                         <form onSubmit={handleSubmitReview} className="review-form">
                             <div className="form-group">
@@ -373,7 +405,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Account Information</h3>
-                            <button className="close-btn" onClick={closeModals}>×</button>
+                            <button className="close-btn" onClick={closeModals}>x</button>
                         </div>
                         <div className="modal-body">
                             <p><strong>Username:</strong> {username}</p>
@@ -392,7 +424,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Settings</h3>
-                            <button className="close-btn" onClick={closeModals}>×</button>
+                            <button className="close-btn" onClick={closeModals}>x</button>
                         </div>
                         <div className="modal-body">
                             <p>Settings coming soon...</p>

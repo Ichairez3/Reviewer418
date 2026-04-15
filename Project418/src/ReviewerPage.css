@@ -173,7 +173,8 @@
 }
 
 .review-btn,
-.download-btn {
+.download-btn,
+.delete-submission-btn {
     flex: 1;
     padding: 0.75rem;
     border: none;
@@ -205,6 +206,21 @@
 .download-btn:hover {
     background-color: #dceacc;
     transform: translateY(-1px);
+}
+
+.delete-submission-btn {
+    background-color: #d9534f;
+    color: white;
+}
+
+.delete-submission-btn:hover:not(:disabled) {
+    background-color: #c84542;
+    transform: translateY(-1px);
+}
+
+.delete-submission-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
 }
 
 .reviews-list {

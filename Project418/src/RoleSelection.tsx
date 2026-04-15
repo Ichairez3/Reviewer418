@@ -3,12 +3,15 @@ import logo from './assets/logo.png'
 
 interface RoleSelectionProps {
     username: string
-    onSelectRole: (role: 'submitter' | 'reviewer') => void
+    systemRole: 'owner' | 'admin' | 'user'
+    onSelectRole: (role: 'submitter' | 'reviewer' | 'admin') => void
     onViewConferences: () => void
     onLogout: () => void
 }
 
-export function RoleSelection({ username, onSelectRole, onViewConferences, onLogout }: RoleSelectionProps) {
+export function RoleSelection({ username, systemRole, onSelectRole, onViewConferences, onLogout }: RoleSelectionProps) {
+    const canAccessAdmin = systemRole === 'owner' || systemRole === 'admin'
+
     return (
         <div className="role-selection-container">
             <div className="role-selection-box">
@@ -42,6 +45,16 @@ export function RoleSelection({ username, onSelectRole, onViewConferences, onLog
                     <div className="role-title">Conferences</div>
                     <div className="role-description">Browse and manage conferences</div>
                 </button>
+
+                {canAccessAdmin && (
+                    <button
+                        className="role-button admin-btn"
+                        onClick={() => onSelectRole('admin')}
+                    >
+                        <div className="role-title">Admin</div>
+                        <div className="role-description">Manage system admin privileges</div>
+                    </button>
+                )}
 
                 <button className="logout-btn" onClick={onLogout}>
                     Logout

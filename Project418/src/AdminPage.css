@@ -1,0 +1,207 @@
+.admin-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #5a873d 0%, #4a6b2f 100%);
+    padding: 2rem;
+}
+
+.admin-header,
+.admin-panel {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.admin-brand h1 {
+    margin: 0;
+    font-size: 2.2rem;
+}
+
+.admin-brand p {
+    margin: 0.35rem 0 0;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.admin-logo {
+    width: 64px;
+    height: 64px;
+    padding: 0.35rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-logo:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.admin-logout-btn {
+    background: #d9534f;
+    color: white;
+    border: none;
+}
+
+.admin-logout-btn:hover {
+    border-color: transparent;
+    background: #c84542;
+}
+
+.admin-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.admin-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: #35532b;
+    font-weight: 600;
+}
+
+.system-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    text-transform: capitalize;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.system-badge.owner {
+    background: #2d4e1c;
+    color: #f4fbef;
+}
+
+.system-badge.admin {
+    background: #5a873d;
+    color: white;
+}
+
+.system-badge.user {
+    background: #e6efdf;
+    color: #436038;
+}
+
+.admin-error,
+.admin-empty {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.admin-error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.admin-empty {
+    background: #edf5e8;
+    color: #42613b;
+}
+
+.admin-user-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-user-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #dbe7d3;
+    border-radius: 14px;
+    padding: 1.2rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f6fbf2 100%);
+}
+
+.admin-user-info h2 {
+    margin: 0;
+    color: #294320;
+    font-size: 1.15rem;
+}
+
+.admin-user-info p {
+    margin: 0.35rem 0 0;
+    color: #61785a;
+}
+
+.admin-user-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admin-action-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.grant-admin-btn,
+.remove-admin-btn {
+    border: none;
+    color: white;
+}
+
+.grant-admin-btn {
+    background: #5a873d;
+}
+
+.grant-admin-btn:hover {
+    border-color: transparent;
+    background: #4a6b2f;
+}
+
+.remove-admin-btn {
+    background: #6c757d;
+}
+
+.remove-admin-btn:hover {
+    border-color: transparent;
+    background: #5a6268;
+}
+
+.owner-note {
+    color: #61785a;
+    font-size: 0.92rem;
+}
+
+@media (max-width: 768px) {
+    .admin-page {
+        padding: 1rem;
+    }
+
+    .admin-header,
+    .admin-user-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-user-actions {
+        justify-content: flex-start;
+    }
+}

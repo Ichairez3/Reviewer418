@@ -28,7 +28,10 @@ const upload = multer({
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
+  .then(async () => {
+    console.log("MongoDB connected");
+    await ensureSystemOwner();
+  })
   .catch((err) => console.error("Mongo connect error:", err));
 
 // User schema for authentication
@@ -37,10 +40,61 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  systemRole: {
+    type: String,
+    enum: ['user', 'admin', 'owner'],
+    default: 'user'
+  }
 });
 
 const User = mongoose.model('User', userSchema);
+
+const SYSTEM_OWNER_USERNAME = 'test-dev';
+
+const isSystemOwner = async (username) => {
+  if (!username) {
+    return false;
+  }
+
+  const user = await User.findOne({ username });
+  return user?.systemRole === 'owner';
+};
+
+const isSystemAdmin = async (username) => {
+  if (!username) {
+    return false;
+  }
+
+  const user = await User.findOne({ username });
+  return user?.systemRole === 'owner' || user?.systemRole === 'admin';
+};
+
+const ensureSystemOwner = async () => {
+  try {
+    const preferredOwner = await User.findOne({ username: SYSTEM_OWNER_USERNAME });
+    if (preferredOwner && preferredOwner.systemRole !== 'owner') {
+      preferredOwner.systemRole = 'owner';
+      await preferredOwner.save();
+      console.log(`Promoted ${SYSTEM_OWNER_USERNAME} to system owner`);
+      return;
+    }
+
+    const existingOwner = await User.findOne({ systemRole: 'owner' });
+    if (existingOwner) {
+      return;
+    }
+
+    const firstUser = await User.findOne().sort({ _id: 1 });
+    if (firstUser) {
+      firstUser.systemRole = 'owner';
+      await firstUser.save();
+      console.log(`Promoted ${firstUser.username} to system owner`);
+    }
+  } catch (error) {
+    console.error('Failed to ensure system owner:', error);
+  }
+};
 
 
 // Define Paper Schema
@@ -94,6 +148,10 @@ const conferenceSchema = new mongoose.Schema({
   paperRequirements: {
     type: String,
     default: ''
+  },
+  isHidden: {
+    type: Boolean,
+    default: false
   },
   createdBy: {
     type: String,
@@ -242,10 +300,27 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashed });
+    const userCount = await User.countDocuments();
+    const shouldBeOwner = userCount === 0;
+    const user = new User({
+      username,
+      email,
+      password: hashed,
+      systemRole: shouldBeOwner ? 'owner' : 'user'
+    });
     await user.save();
 
-    res.status(201).json({ message: 'User created' });
+    if (username === SYSTEM_OWNER_USERNAME && user.systemRole !== 'owner') {
+      user.systemRole = 'owner';
+      await user.save();
+    }
+
+    res.status(201).json({
+      message: 'User created',
+      username: user.username,
+      email: user.email,
+      systemRole: user.systemRole
+    });
   } catch (err) {
     console.error('Signup error', err);
     res.status(500).json({ error: 'Server error' });
@@ -270,7 +345,12 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // authentication succeeded
-    res.json({ message: 'Login successful', username: user.username, email: user.email });
+    res.json({
+      message: 'Login successful',
+      username: user.username,
+      email: user.email,
+      systemRole: user.systemRole || 'user'
+    });
   } catch (err) {
     console.error('Login error', err);
     res.status(500).json({ error: 'Server error' });
@@ -280,7 +360,7 @@ app.post('/api/auth/login', async (req, res) => {
 // Get all users (for user management in conferences)
 app.get('/api/users', async (req, res) => {
   try {
-    const users = await User.find({}, { username: 1, _id: 1, email: 1 }).sort({ username: 1 });
+    const users = await User.find({}, { username: 1, _id: 1, email: 1, systemRole: 1 }).sort({ username: 1 });
     res.json(users);
   } catch (err) {
     console.error('Error fetching users:', err);
@@ -295,6 +375,12 @@ app.post("/api/conferences", async (req, res) => {
     if (!createdBy) {
       return res.status(400).json({ error: 'createdBy username is required' });
     }
+
+    const requesterIsSystemAdmin = await isSystemAdmin(createdBy);
+    if (!requesterIsSystemAdmin) {
+      return res.status(403).json({ error: 'Only the owner or admins can create conferences' });
+    }
+
     const conference = new Conference({
       name,
       date,
@@ -311,7 +397,17 @@ app.post("/api/conferences", async (req, res) => {
 
 app.get("/api/conferences", async (req, res) => {
   try {
-    const conferences = await Conference.find().sort({ date: -1 });
+    const requestedBy = req.query.requestedBy;
+    const requesterIsSystemAdmin = await isSystemAdmin(typeof requestedBy === 'string' ? requestedBy : '');
+    const filter = requesterIsSystemAdmin
+      ? {}
+      : {
+          $or: [
+            { isHidden: false },
+            { isHidden: { $exists: false } }
+          ]
+        };
+    const conferences = await Conference.find(filter).sort({ date: -1 });
     res.json(conferences);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -327,6 +423,47 @@ app.get("/api/conferences/:id", async (req, res) => {
     res.json(conference);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/users/:userId/system-role', async (req, res) => {
+  try {
+    const { requestedBy, systemRole } = req.body;
+
+    if (!requestedBy) {
+      return res.status(400).json({ error: 'requestedBy username is required' });
+    }
+
+    if (!['user', 'admin'].includes(systemRole)) {
+      return res.status(400).json({ error: 'systemRole must be user or admin' });
+    }
+
+    const requesterIsAdmin = await isSystemAdmin(requestedBy);
+    if (!requesterIsAdmin) {
+      return res.status(403).json({ error: 'Only the owner or admins can manage admin privileges' });
+    }
+
+    const targetUser = await User.findById(req.params.userId);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (targetUser.systemRole === 'owner') {
+      return res.status(403).json({ error: 'The owner account cannot be changed from this screen' });
+    }
+
+    targetUser.systemRole = systemRole;
+    await targetUser.save();
+
+    res.json({
+      _id: targetUser._id,
+      username: targetUser.username,
+      email: targetUser.email,
+      systemRole: targetUser.systemRole
+    });
+  } catch (err) {
+    console.error('Error updating system role:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -348,16 +485,78 @@ app.put("/api/conferences/:id/requirements", async (req, res) => {
       username: requestedBy
     });
 
+    const requesterIsSystemOwner = await isSystemOwner(requestedBy);
     const isCreator = conference.createdBy === requestedBy;
     const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
 
-    if (!isCreator && !isOrganizer) {
+    if (!requesterIsSystemOwner && !isCreator && !isOrganizer) {
       return res.status(403).json({ error: 'Only the conference owner or organizer can edit paper requirements' });
     }
 
     conference.paperRequirements = typeof paperRequirements === 'string' ? paperRequirements : '';
     const updatedConference = await conference.save();
     res.json(updatedConference);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/api/conferences/:id/visibility", async (req, res) => {
+  try {
+    const { requestedBy, isHidden } = req.body;
+
+    if (!requestedBy) {
+      return res.status(400).json({ error: 'requestedBy username is required' });
+    }
+
+    const requesterIsSystemAdmin = await isSystemAdmin(requestedBy);
+    if (!requesterIsSystemAdmin) {
+      return res.status(403).json({ error: 'Only the owner or admins can hide conferences' });
+    }
+
+    const conference = await Conference.findById(req.params.id);
+    if (!conference) {
+      return res.status(404).json({ error: 'Conference not found' });
+    }
+
+    conference.isHidden = Boolean(isHidden);
+    const updatedConference = await conference.save();
+    res.json(updatedConference);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/conferences/:id", async (req, res) => {
+  try {
+    const { requestedBy } = req.body;
+
+    if (!requestedBy) {
+      return res.status(400).json({ error: 'requestedBy username is required' });
+    }
+
+    const requesterIsSystemAdmin = await isSystemAdmin(requestedBy);
+    if (!requesterIsSystemAdmin) {
+      return res.status(403).json({ error: 'Only the owner or admins can delete conferences' });
+    }
+
+    const conference = await Conference.findById(req.params.id);
+    if (!conference) {
+      return res.status(404).json({ error: 'Conference not found' });
+    }
+
+    const submissions = await Submission.find({ conference: req.params.id }, { _id: 1 });
+    const submissionIds = submissions.map((submission) => submission._id);
+
+    if (submissionIds.length > 0) {
+      await Review.deleteMany({ submission: { $in: submissionIds } });
+      await Submission.deleteMany({ conference: req.params.id });
+    }
+
+    await ConferenceUser.deleteMany({ conference: req.params.id });
+    await Conference.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'Conference deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -396,10 +595,11 @@ app.post("/api/conferences/:conferenceId/users", async (req, res) => {
       username: requestedBy
     });
 
+    const requesterIsSystemAdmin = await isSystemAdmin(requestedBy);
     const isCreator = conference.createdBy === requestedBy;
     const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
 
-    if (!isCreator && !isOrganizer) {
+    if (!requesterIsSystemAdmin && !isCreator && !isOrganizer) {
       return res.status(403).json({ error: 'Only conference creators and organizers can add users' });
     }
 
@@ -454,10 +654,11 @@ app.delete("/api/conferences/:conferenceId/users/:userId", async (req, res) => {
       username: requestedBy
     });
 
+    const requesterIsSystemAdmin = await isSystemAdmin(requestedBy);
     const isCreator = conference.createdBy === requestedBy;
     const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
 
-    if (!isCreator && !isOrganizer) {
+    if (!requesterIsSystemAdmin && !isCreator && !isOrganizer) {
       return res.status(403).json({ error: 'Only conference creators and organizers can remove users' });
     }
 
@@ -494,10 +695,11 @@ app.put("/api/conferences/:conferenceId/users/:userId", async (req, res) => {
       username: requestedBy
     });
 
+    const requesterIsSystemAdmin = await isSystemAdmin(requestedBy);
     const isCreator = conference.createdBy === requestedBy;
     const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
 
-    if (!isCreator && !isOrganizer) {
+    if (!requesterIsSystemAdmin && !isCreator && !isOrganizer) {
       return res.status(403).json({ error: 'Only conference creators and organizers can edit user roles' });
     }
 
@@ -682,6 +884,32 @@ app.get("/api/papers/:id", async (req, res) => {
     res.setHeader("Content-Type", paper.mimeType);
     res.setHeader("Content-Disposition", `attachment; filename="${paper.originalName}"`);
     res.send(paper.fileData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/papers/:id", async (req, res) => {
+  try {
+    const { requestedBy } = req.body;
+
+    if (!requestedBy) {
+      return res.status(400).json({ error: 'requestedBy username is required' });
+    }
+
+    const requesterIsSystemAdmin = await isSystemAdmin(requestedBy);
+    if (!requesterIsSystemAdmin) {
+      return res.status(403).json({ error: 'Only the owner or admins can delete submissions' });
+    }
+
+    const deletedPaper = await Paper.findByIdAndDelete(req.params.id);
+    if (!deletedPaper) {
+      return res.status(404).json({ error: 'Paper not found' });
+    }
+
+    await Submission.deleteMany({ fileId: req.params.id });
+
+    res.json({ message: 'Submission deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

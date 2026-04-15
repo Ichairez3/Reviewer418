@@ -33,10 +33,11 @@ interface ConferenceUser {
 interface ConferenceDetailProps {
     conference: Conference
     username: string
+    systemRole: 'owner' | 'admin' | 'user'
     onBack: () => void
 }
 
-export function ConferenceDetail({ conference, username, onBack }: ConferenceDetailProps) {
+export function ConferenceDetail({ conference, username, systemRole, onBack }: ConferenceDetailProps) {
     const [submissions, setSubmissions] = useState<Submission[]>([])
     const [conferenceUsers, setConferenceUsers] = useState<ConferenceUser[]>([])
     const [availableUsers, setAvailableUsers] = useState<Array<{ id: string; username: string }>>([]
@@ -307,8 +308,9 @@ export function ConferenceDetail({ conference, username, onBack }: ConferenceDet
     }
     const isConferenceCreator = conference.createdBy === username
     const isOrganizer = conferenceUsers.some(u => u.username === username && u.roles?.includes('organizer'))
-    const canManageUsers = isConferenceCreator || isOrganizer
-    const canEditRequirements = isConferenceCreator || isOrganizer
+    const isSystemAdmin = systemRole === 'owner' || systemRole === 'admin'
+    const canManageUsers = isSystemAdmin || isConferenceCreator || isOrganizer
+    const canEditRequirements = isSystemAdmin || isConferenceCreator || isOrganizer
 
     const handleSaveRequirements = async () => {
         setIsSavingRequirements(true)
@@ -543,7 +545,7 @@ export function ConferenceDetail({ conference, username, onBack }: ConferenceDet
                             </div>
                         ) : (
                             <p style={{ marginTop: '1.5rem' }}>
-                                Only the conference owner or organizer can edit these requirements.
+                                Only the system owner/admin, conference owner, or organizer can edit these requirements.
                             </p>
                         )}
                     </div>

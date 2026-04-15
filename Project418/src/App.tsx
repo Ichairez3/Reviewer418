@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react'
 import { LandingPage } from './LandingPage'
 import { Login } from './Login'
 import { RoleSelection } from './RoleSelection'
+import { AdminPage } from './AdminPage'
 import { SubmissionPage } from './SubmissionPage'
 import { ReviewerPage } from './ReviewerPage'
 import { ConferenceList } from './ConferenceList'
 import { ConferenceDetail } from './ConferenceDetail'
 import './App.css'
 
-type UserRole = 'submitter' | 'reviewer' | null
+type UserRole = 'submitter' | 'reviewer' | 'admin' | null
+type SystemRole = 'owner' | 'admin' | 'user'
 
 interface Conference {
     _id: string
@@ -25,6 +27,7 @@ function App() {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [userID, setUserID] = useState('')
+    const [systemRole, setSystemRole] = useState<SystemRole>('user')
     const [userRole, setUserRole] = useState<UserRole>(null)
     const [viewingConferences, setViewingConferences] = useState(false)
     const [selectedConference, setSelectedConference] = useState<Conference | null>(null)
@@ -33,21 +36,25 @@ function App() {
         const storedUsername = localStorage.getItem('username')
         const storedEmail = localStorage.getItem('email')
         const storedID = localStorage.getItem('id')
+        const storedSystemRole = (localStorage.getItem('systemRole') as SystemRole) || 'user'
         const storedRole = localStorage.getItem('userRole') as UserRole
-        if (storedUsername && storedRole) {
+        if (storedUsername) {
             setUsername(storedUsername)
             setEmail(storedEmail || '')
             setUserID(storedID || '')
-            setUserRole(storedRole)
+            setSystemRole(storedSystemRole)
+            setUserRole(storedRole || null)
             setIsLoggedIn(true)
         }
     }, [])
 
-    const handleLogin = (user: string) => {
+    const handleLogin = (user: string, nextSystemRole: SystemRole) => {
         setUsername(user)
+        setSystemRole(nextSystemRole)
         setIsLoggedIn(true)
         setShowLogin(false)
         localStorage.setItem('username', user)
+        localStorage.setItem('systemRole', nextSystemRole)
         const storedEmail = localStorage.getItem('email')
         if (storedEmail) {
             setEmail(storedEmail)
@@ -58,7 +65,7 @@ function App() {
         }
     }
 
-    const handleRoleSelect = (role: 'submitter' | 'reviewer') => {
+    const handleRoleSelect = (role: 'submitter' | 'reviewer' | 'admin') => {
         setUserRole(role)
         localStorage.setItem('userRole', role)
     }
@@ -89,14 +96,24 @@ function App() {
         setIsLoggedIn(false)
         setShowLogin(false)
         setUsername('')
+        setSystemRole('user')
         setUserRole(null)
         setViewingConferences(false)
         setSelectedConference(null)
         localStorage.clear()
     }
 
+    const showSystemRoleBadge = isLoggedIn && systemRole !== 'user'
+    const systemRoleLabel = systemRole === 'owner' ? 'Owner Account' : 'Admin Account'
+
     return (
         <>
+            {showSystemRoleBadge && (
+                <div className={`system-role-indicator ${systemRole}`}>
+                    <span className="system-role-dot"></span>
+                    <span>{systemRoleLabel}</span>
+                </div>
+            )}
             {!isLoggedIn ? (
                 showLogin ? (
                     <Login onLogin={handleLogin} onBack={() => setShowLogin(false)} />
@@ -108,11 +125,13 @@ function App() {
                     <ConferenceDetail 
                         conference={selectedConference}
                         username={username}
+                        systemRole={systemRole}
                         onBack={handleBackFromConferenceDetail}
                     />
                 ) : (
                     <ConferenceList 
                         username={username}
+                        systemRole={systemRole}
                         onSelectConference={handleSelectConference}
                         onBack={handleBackFromConferences}
                         onLogout={handleLogout}
@@ -121,8 +140,16 @@ function App() {
             ) : !userRole ? (
                 <RoleSelection 
                     username={username}
+                    systemRole={systemRole}
                     onSelectRole={handleRoleSelect}
                     onViewConferences={handleViewConferences}
+                    onLogout={handleLogout}
+                />
+            ) : userRole === 'admin' ? (
+                <AdminPage
+                    username={username}
+                    systemRole={systemRole}
+                    onBackToMain={handleBackToRoleSelection}
                     onLogout={handleLogout}
                 />
             ) : userRole === 'submitter' ? (
@@ -135,6 +162,7 @@ function App() {
                 <ReviewerPage 
                     username={username} 
                     userID={userID}
+                    systemRole={systemRole}
                     onLogout={handleLogout}
                     onBackToMain={handleBackToRoleSelection}
                 />

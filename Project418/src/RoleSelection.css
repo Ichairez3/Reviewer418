@@ -104,6 +104,19 @@
     background: rgba(90, 135, 61, 0.1);
 }
 
+.admin-btn {
+    border-color: #3d5f28;
+    width: 100%;
+    max-width: 300px;
+    margin: 1rem auto 0;
+    background: linear-gradient(180deg, #ffffff 0%, #eef6e9 100%);
+}
+
+.admin-btn:hover {
+    border-color: #3d5f28;
+    background: rgba(61, 95, 40, 0.08);
+}
+
 .role-title {
     font-size: 1.3rem;
     font-weight: 600;
