@@ -238,6 +238,8 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         setShowSettingsModal(true)
     }
 
+    const getPaperDownloadUrl = (submission: Submission) => `/api/papers/${submission._id}`
+
     if (loading) {
         return <div className="loading">Loading...</div>
     }
@@ -319,11 +321,21 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                                 {submissionHistory.map(sub => (
                                     <div key={sub.submission._id} className="submission-card">
                                         <div className="card-header">
-                                            <h3>{sub.submission.fileName}</h3>
+                                            <h3>{sub.submission.originalName || sub.submission.fileName}</h3>
                                             <span className={ 'Paper'/*`type-badge ${sub.type.toLowerCase()}`*/ }></span>
                                         </div>
                                         <p className="authors">Authors: {sub.submission.submitterEmail}</p>
                                         <p className="date">Submitted: {new Date(sub.submission.uploadedAt).toLocaleDateString()}</p>
+                                        <div className="submission-actions">
+                                            <a
+                                                className="download-btn"
+                                                href={getPaperDownloadUrl(sub.submission)}
+                                                download={sub.submission.originalName || sub.submission.fileName}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                Download
+                                            </a>
                                         <button 
                                             className="review-btn"
                                             onClick={() => {
@@ -333,6 +345,7 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
                                         >
                                             Review Now →
                                         </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

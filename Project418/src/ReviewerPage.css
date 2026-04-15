@@ -166,22 +166,45 @@
     margin: 0.5rem 0;
 }
 
-.review-btn {
-    width: 100%;
+.submission-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.review-btn,
+.download-btn {
+    flex: 1;
     padding: 0.75rem;
-    background-color: #5a873d;
-    color: white;
     border: none;
     border-radius: 4px;
-    margin-top: 1rem;
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 500;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+    text-decoration: none;
+}
+
+.review-btn {
+    background-color: #5a873d;
+    color: white;
 }
 
 .review-btn:hover {
     background-color: #4a6b2f;
+    transform: translateY(-1px);
+}
+
+.download-btn {
+    background-color: #edf4e7;
+    color: #36511f;
+    border: 1px solid #b9cfa7;
+}
+
+.download-btn:hover {
+    background-color: #dceacc;
+    transform: translateY(-1px);
 }
 
 .reviews-list {
@@ -476,6 +499,10 @@
 
     .submissions-grid {
         grid-template-columns: 1fr;
+    }
+
+    .submission-actions {
+        flex-direction: column;
     }
 
     .tabs {
