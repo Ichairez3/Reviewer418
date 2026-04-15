@@ -6,7 +6,6 @@ import logo from './assets/logo.png'
 interface SubmissionPageProps {
     username: string
     email: string
-    onLogout: () => void
     onBackToMain: () => void
 }
 
@@ -15,6 +14,7 @@ interface Conference {
     name: string
     date: string
     location: string
+    paperRequirements?: string
 }
 
 interface Submission {
@@ -26,7 +26,7 @@ interface Submission {
     submitterEmail: string
 }
 
-export function SubmissionPage({ username, email, onLogout/* onlogout goes unused? is that a problem? */, onBackToMain }: SubmissionPageProps) {
+export function SubmissionPage({ username, email, onBackToMain }: SubmissionPageProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [selectedConference, setSelectedConference] = useState<string>('')
     const [conferences, setConferences] = useState<Conference[]>([])
@@ -174,6 +174,12 @@ export function SubmissionPage({ username, email, onLogout/* onlogout goes unuse
         return (bytes / 1024).toFixed(2) + 'KB'
     }
 
+    const selectedConferenceDetails = conferences.find((conference) => conference._id === selectedConference)
+    const selectedConferenceRequirements = selectedConferenceDetails?.paperRequirements
+        ?.split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean) ?? []
+
     const handleShowAccount = () => {
         setShowAccountModal(true)
     }
@@ -258,6 +264,21 @@ export function SubmissionPage({ username, email, onLogout/* onlogout goes unuse
                                             <p className="no-conferences-message">No conferences available</p>
                                         )}
                                     </div>
+
+                                    {selectedConference && (
+                                        <div className="file-details">
+                                            <h3>Conference Requirements</h3>
+                                            {selectedConferenceRequirements.length > 0 ? (
+                                                <ul>
+                                                    {selectedConferenceRequirements.map((requirement, index) => (
+                                                        <li key={`${selectedConference}-${index}`}>{requirement}</li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p>No extra paper requirements were posted for this conference.</p>
+                                            )}
+                                        </div>
+                                    )}
                                     
                                     <button className="submit-btn" onClick={handleTurnInClick} disabled={!selectedConference}>
                                         Choose File

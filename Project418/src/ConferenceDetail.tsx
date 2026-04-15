@@ -8,6 +8,7 @@ interface Conference {
     name: string
     date: string
     location: string
+    paperRequirements?: string
     createdBy?: string
 }
 
@@ -50,7 +51,10 @@ export function ConferenceDetail({ conference, username, onBack }: ConferenceDet
     const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
     const [showReviewPanel, setShowReviewPanel] = useState(false)
     const [reviewingSubmission, setReviewingSubmission] = useState<Submission | null>(null)
-    const [activeTab, setActiveTab] = useState<'submissions' | 'users'>('submissions')
+    const [activeTab, setActiveTab] = useState<'submissions' | 'users' | 'requirements'>('submissions')
+    const [currentRequirements, setCurrentRequirements] = useState(conference.paperRequirements || '')
+    const [requirementsDraft, setRequirementsDraft] = useState(conference.paperRequirements || '')
+    const [isSavingRequirements, setIsSavingRequirements] = useState(false)
     const [newUser, setNewUser] = useState({
         selectedUsername: '',
         searchTerm: '',
@@ -79,6 +83,11 @@ export function ConferenceDetail({ conference, username, onBack }: ConferenceDet
         }
         fetchAllData()
     }, [conference._id])
+
+    useEffect(() => {
+        setCurrentRequirements(conference.paperRequirements || '')
+        setRequirementsDraft(conference.paperRequirements || '')
+    }, [conference.paperRequirements, conference._id])
 
     const fetchAvailableUsers = async () => {
         try {
@@ -299,6 +308,42 @@ export function ConferenceDetail({ conference, username, onBack }: ConferenceDet
     const isConferenceCreator = conference.createdBy === username
     const isOrganizer = conferenceUsers.some(u => u.username === username && u.roles?.includes('organizer'))
     const canManageUsers = isConferenceCreator || isOrganizer
+    const canEditRequirements = isConferenceCreator || isOrganizer
+
+    const handleSaveRequirements = async () => {
+        setIsSavingRequirements(true)
+        try {
+            const response = await fetch(`/api/conferences/${conference._id}/requirements`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    requestedBy: username,
+                    paperRequirements: requirementsDraft
+                })
+            })
+
+            if (!response.ok) {
+                const data = await response.json()
+                setError(data.error || 'Failed to update requirements')
+                return
+            }
+
+            const updatedConference = await response.json()
+            setCurrentRequirements(updatedConference.paperRequirements || '')
+            setRequirementsDraft(updatedConference.paperRequirements || '')
+            setError('')
+        } catch (err) {
+            console.error('Error updating requirements:', err)
+            setError('Unable to save requirements')
+        } finally {
+            setIsSavingRequirements(false)
+        }
+    }
+
+    const requirementLines = currentRequirements
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
 
     if (loading) {
         return (
@@ -404,6 +449,12 @@ export function ConferenceDetail({ conference, username, onBack }: ConferenceDet
                 >
                     Submissions
                 </button>
+                <button 
+                    className={`tab ${activeTab === 'requirements' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('requirements')}
+                >
+                    Paper Requirements
+                </button>
                 {canManageUsers && (
                     <button 
                         className={`tab ${activeTab === 'users' ? 'active' : ''}`}
@@ -449,6 +500,53 @@ export function ConferenceDetail({ conference, username, onBack }: ConferenceDet
                             ))}
                         </div>
                     )}
+                </div>
+            )}
+
+            {activeTab === 'requirements' && (
+                <div className="submissions-section">
+                    <h2>Paper Requirements</h2>
+                    <div className="modal-body" style={{ padding: 0 }}>
+                        <p>
+                            Authors see these requirements on the public landing page before logging in.
+                        </p>
+                        {requirementLines.length > 0 ? (
+                            <ul style={{ paddingLeft: '1.25rem', marginTop: '1rem' }}>
+                                {requirementLines.map((line, index) => (
+                                    <li key={`${conference._id}-req-${index}`}>{line}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p style={{ marginTop: '1rem' }}>No paper requirements have been posted yet.</p>
+                        )}
+
+                        {canEditRequirements ? (
+                            <div className="form-group" style={{ marginTop: '1.5rem' }}>
+                                <label htmlFor="paper-requirements">Edit Requirements</label>
+                                <textarea
+                                    id="paper-requirements"
+                                    value={requirementsDraft}
+                                    onChange={(e) => setRequirementsDraft(e.target.value)}
+                                    rows={8}
+                                    placeholder="Enter one requirement per line"
+                                />
+                                <div className="form-actions">
+                                    <button
+                                        type="button"
+                                        className="submit-form-btn"
+                                        onClick={handleSaveRequirements}
+                                        disabled={isSavingRequirements}
+                                    >
+                                        {isSavingRequirements ? 'Saving...' : 'Save Requirements'}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p style={{ marginTop: '1.5rem' }}>
+                                Only the conference owner or organizer can edit these requirements.
+                            </p>
+                        )}
+                    </div>
                 </div>
             )}
 

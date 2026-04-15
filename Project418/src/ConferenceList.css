@@ -273,7 +273,8 @@
     color: #333;
 }
 
-.form-group input {
+.form-group input,
+.form-group textarea {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #ddd;
@@ -282,10 +283,16 @@
     box-sizing: border-box;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
     outline: none;
     border-color: #5a873d;
     box-shadow: 0 0 0 3px rgba(90, 135, 61, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 140px;
 }
 
 .form-actions {

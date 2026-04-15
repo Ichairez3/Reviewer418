@@ -4,12 +4,12 @@ import logo from './assets/logo.png'
 
 interface LoginProps {
     onLogin: (username: string) => void
+    onBack: () => void
 }
 
-export function Login({ onLogin }: LoginProps) {
+export function Login({ onLogin, onBack }: LoginProps) {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const [id, setID] = useState('')
     const [email, setEmail] = useState('')
     const [isSignup, setIsSignup] = useState(false)
     const [error, setError] = useState('')
@@ -31,14 +31,15 @@ export function Login({ onLogin }: LoginProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             })
-            
+
             const idResponse = await fetch('/api/users')
             if (idResponse.ok) {
                 const userData = await idResponse.json()
-                const user = userData.find((user: any) => user.username === username)
-                localStorage.setItem('id', user._id)//added for reviewer page
+                const user = userData.find((currentUser: { username: string; _id: string }) => currentUser.username === username)
+                if (user?._id) {
+                    localStorage.setItem('id', user._id)
+                }
             }
-            
 
             const data = await response.json()
 
@@ -49,87 +50,89 @@ export function Login({ onLogin }: LoginProps) {
                 } else if (data.email) {
                     localStorage.setItem('email', data.email)
                 }
-                setLoading(false)
                 onLogin(username)
             } else {
                 setError(data.error || 'Authentication failed')
-                setLoading(false)
             }
-
         } catch (err) {
             console.error('Network error:', err)
             setError('Unable to reach server. Please try again later.')
+        } finally {
             setLoading(false)
         }
     }
+
     return (
-        <div className = "login-container">
-            <div className = "login-box">
+        <div className="login-container">
+            <div className="login-box">
+                <button type="button" className="toggle-btn" onClick={onBack}>
+                    {'<-'} Back to requirements
+                </button>
                 <img src={logo} alt="Reviewer418 Logo" className="login-logo" />
-                <h1> Reviewer418 </h1>
+                <h1>Reviewer418</h1>
                 <h2>{isSignup ? 'Create Account' : 'Login'}</h2>
 
                 {error && <div className="error-message">{error}</div>}
 
-                <form onSubmit = {handleSubmit}>
-                    <div className = "form-group">
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
                         <label htmlFor="username">Username</label>
                         <input
-                            id = "username"
-                            type = "text"
-                            value = {username}
-                            onChange = {(e) => setUsername(e.target.value)}
+                            id="username"
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
-                            placeholder = "Enter your Username"
+                            placeholder="Enter your username"
                         />
                     </div>
 
                     {isSignup && (
-                        <div className = "form-group">
-                            <label htmlFor = "email">Email</label>
+                        <div className="form-group">
+                            <label htmlFor="email">Email</label>
                             <input
-                                id = "email"
-                                type = "email"
-                                value = {email}
-                                onChange = {(e) => setEmail(e.target.value)}
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
-                                placeholder = "Enter your Email"
+                                placeholder="Enter your email"
                             />
                         </div>
                     )}
 
-                    <div className = "form-group">
+                    <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input
-                            id = "password"
-                            type = "password"
-                            value = {password}
-                            onChange = {(e) => setPassword(e.target.value)}
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
-                            placeholder = "Enter Your Password"
+                            placeholder="Enter your password"
                         />
                     </div>
 
                     <button
-                        type = "submit"
-                        className = "login-btn"
-                        disabled = {loading}
+                        type="submit"
+                        className="login-btn"
+                        disabled={loading}
                     >
                         {loading ? 'Loading...' : isSignup ? 'Sign Up' : 'Login'}
                     </button>
                 </form>
 
-                <div className = "toggle-auth">
+                <div className="toggle-auth">
                     <p>
-                        {isSignup ? 'Already have an account?' : "Dont have an Account?"}
+                        {isSignup ? 'Already have an account?' : "Don't have an account?"}
                         {' '}
                         <button
-                            type = "button"
-                            onClick = {() => {
+                            type="button"
+                            onClick={() => {
                                 setIsSignup(!isSignup)
                                 setError('')
                             }}
-                            className = "toggle-btn"
+                            className="toggle-btn"
                         >
                             {isSignup ? 'Login' : 'Sign Up'}
                         </button>

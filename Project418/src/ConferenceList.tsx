@@ -7,6 +7,7 @@ interface Conference {
     name: string
     date: string
     location: string
+    paperRequirements?: string
     createdBy?: string
 }
 
@@ -25,7 +26,8 @@ export function ConferenceList({ username, onSelectConference, onLogout, onBack 
     const [newConference, setNewConference] = useState({
         name: '',
         date: '',
-        location: ''
+        location: '',
+        paperRequirements: ''
     })
 
     useEffect(() => {
@@ -64,6 +66,7 @@ export function ConferenceList({ username, onSelectConference, onLogout, onBack 
                     name: newConference.name,
                     date: new Date(newConference.date).toISOString(),
                     location: newConference.location,
+                    paperRequirements: newConference.paperRequirements,
                     createdBy: username
                 })
             })
@@ -71,7 +74,7 @@ export function ConferenceList({ username, onSelectConference, onLogout, onBack 
             if (response.ok) {
                 const created = await response.json()
                 setConferences([created, ...conferences])
-                setNewConference({ name: '', date: '', location: '' })
+                setNewConference({ name: '', date: '', location: '', paperRequirements: '' })
                 setShowCreateModal(false)
                 setError('')
             } else {
@@ -156,6 +159,16 @@ export function ConferenceList({ username, onSelectConference, onLogout, onBack 
                                     onChange={(e) => setNewConference({ ...newConference, location: e.target.value })}
                                     placeholder="e.g., San Francisco, CA"
                                     required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="conf-requirements">Paper Requirements</label>
+                                <textarea
+                                    id="conf-requirements"
+                                    value={newConference.paperRequirements}
+                                    onChange={(e) => setNewConference({ ...newConference, paperRequirements: e.target.value })}
+                                    placeholder="One requirement per line, for example: PDF only"
+                                    rows={6}
                                 />
                             </div>
                             <div className="form-actions">

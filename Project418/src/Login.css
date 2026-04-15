@@ -15,6 +15,13 @@
     max-width: 400px;
 }
 
+.login-box > .toggle-btn {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: #4a6b2f;
+}
+
 .login-box h1 {
     color: #5a873d;
     font-size: 1.5rem;

@@ -1,0 +1,257 @@
+.landing-page {
+    min-height: 100vh;
+    color: #13261d;
+    background:
+        radial-gradient(circle at top right, rgba(149, 201, 122, 0.3), transparent 26%),
+        radial-gradient(circle at left center, rgba(90, 135, 61, 0.28), transparent 24%),
+        linear-gradient(180deg, #4a6b2f 0%, #5a873d 22%, #edf5e8 58%, #ffffff 100%);
+}
+
+.landing-hero,
+.landing-body {
+    width: min(1180px, calc(100% - 3rem));
+    margin: 0 auto;
+}
+
+.landing-hero {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    padding: 4rem 0 2rem;
+    align-items: center;
+}
+
+.landing-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+}
+
+.landing-logo {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.landing-eyebrow {
+    margin: 1.5rem 0 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.85rem;
+    color: #d8edc6;
+    font-weight: 700;
+}
+
+.landing-copy h1 {
+    margin: 0;
+    font-size: clamp(2.8rem, 5vw, 4.8rem);
+    line-height: 0.98;
+    max-width: 11ch;
+    color: #ffffff;
+}
+
+.landing-description {
+    margin-top: 1.25rem;
+    max-width: 52ch;
+    font-size: 1.08rem;
+    color: #e8f3df;
+}
+
+.landing-actions {
+    margin-top: 1.75rem;
+}
+
+.landing-primary-btn {
+    padding: 0.95rem 1.4rem;
+    border: none;
+    border-radius: 999px;
+    background: #edf5e8;
+    color: #315026;
+    font-weight: 700;
+    box-shadow: 0 18px 36px rgba(19, 38, 29, 0.24);
+}
+
+.landing-primary-btn:hover {
+    border-color: transparent;
+    background: #ffffff;
+}
+
+.landing-highlight-card {
+    padding: 2rem;
+    border-radius: 28px;
+    background: linear-gradient(160deg, rgba(39, 66, 28, 0.96) 0%, rgba(90, 135, 61, 0.94) 100%);
+    color: #f3f9ec;
+    box-shadow: 0 24px 50px rgba(19, 38, 29, 0.18);
+    border: 1px solid rgba(214, 238, 194, 0.18);
+}
+
+.highlight-label {
+    margin: 0 0 0.8rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #d7e6c0;
+}
+
+.landing-highlight-card h2 {
+    margin: 0 0 1rem;
+    font-size: 2rem;
+}
+
+.landing-highlight-card p {
+    margin: 0.3rem 0;
+    color: #edf3e3;
+}
+
+.highlight-owner {
+    margin-top: 1.2rem;
+    color: #d7e6c0;
+}
+
+.landing-body {
+    padding: 1rem 0 4rem;
+}
+
+.conference-browser {
+    padding: 2rem;
+    border-radius: 32px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(90, 135, 61, 0.16);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 18px 40px rgba(47, 76, 32, 0.12);
+}
+
+.section-heading h2 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.section-heading p {
+    margin-top: 0.4rem;
+    color: #4d6358;
+}
+
+.landing-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 360px) 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.conference-list-panel,
+.requirements-panel {
+    border-radius: 24px;
+    background: #f9fcf7;
+    border: 1px solid rgba(90, 135, 61, 0.14);
+}
+
+.conference-list-panel {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.conference-list-item {
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(90, 135, 61, 0.1);
+    background: linear-gradient(180deg, #ffffff 0%, #f2f8ee 100%);
+    color: #13261d;
+}
+
+.conference-list-item:hover {
+    border-color: rgba(90, 135, 61, 0.34);
+    background: linear-gradient(180deg, #f9fcf7 0%, #e7f2de 100%);
+}
+
+.conference-list-item.active {
+    background: linear-gradient(180deg, #d9ebcc 0%, #c7dfb7 100%);
+    border-color: #5a873d;
+    box-shadow: inset 0 0 0 1px rgba(90, 135, 61, 0.18);
+}
+
+.conference-name {
+    display: block;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.conference-meta {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+    color: #557163;
+}
+
+.requirements-panel {
+    padding: 1.5rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f9ee 100%);
+}
+
+.requirements-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.requirements-header p {
+    margin: 0.5rem 0 0;
+    color: #4d6358;
+}
+
+.requirements-list {
+    margin: 1.5rem 0 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.8rem;
+}
+
+.requirements-list li {
+    color: #243a2f;
+}
+
+.requirements-empty,
+.landing-empty {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 18px;
+    background: #e8f3df;
+    color: #456050;
+    border: 1px solid rgba(90, 135, 61, 0.14);
+}
+
+@media (max-width: 900px) {
+    .landing-hero,
+    .landing-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .landing-hero {
+        padding-top: 2.5rem;
+    }
+
+    .landing-body {
+        padding-bottom: 2.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .landing-hero,
+    .landing-body {
+        width: min(100% - 1.5rem, 1180px);
+    }
+
+    .conference-browser,
+    .landing-highlight-card {
+        padding: 1.25rem;
+    }
+}

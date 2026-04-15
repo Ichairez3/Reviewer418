@@ -40,9 +40,7 @@ interface Review {
 }
 
 export function ReviewerPage({ username, userID, onLogout, onBackToMain }: ReviewerPageProps) {
-    const [submissions, setSubmissions] = useState<Submission[]>([])
     const [reviews, setReviews] = useState<Review[]>([])//user's reviews only
-    const [allReviews, setAllReviews] = useState<Review[]>([])//everyone's reviews
     const [conferences, setConferences] = useState<Conference[]>([])
     const [selectedConference, setSelectedConference] = useState<string>('')
     const [loading, setLoading] = useState(true)
@@ -68,15 +66,13 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
     useEffect(() => {
         fetchSubmissions()//build the submission block
         fetchReviews()//build the reviews block
-        fetchAllReviews()//build the all reviews block
         fetchConferences()
     }, [])
 
     useEffect(() => {
         if (selectedConference) {
-            fetchData()
+            setError('')
         } else {
-            setSubmissions([])
             setReviews([])
         }
     }, [selectedConference])
@@ -123,27 +119,6 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
         }
     }
 
-    const fetchAllReviews = async () => {//reviews for everyone
-        try {
-            const response = await fetch('/api/reviews') 
-            if (response.ok) {
-                const reviewsJson = await response.json()
-                const reviewMap = reviewsJson.map((review: Review) => ({
-                    _id: review._id,
-                    submission: review.submission,
-                    score: review.score,
-                    comments: review.comments,
-                    submittedAt: review.submittedAt,
-                    reviewer: review.reviewer
-                }))
-                setAllReviews(reviewMap)
-            }
-        } catch (err) {
-            console.error('Failed to fetch reviews:', err)
-        }
-    }
-
-
     const fetchConferences = async () => {
         try {
             const response = await fetch('/api/conferences')
@@ -153,34 +128,6 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
             }
         } catch (err) {
             console.error('Failed to fetch conferences:', err)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchData = async () => {//is this deprecated now that we aren't doing multiple conferences?
-        if (!selectedConference) {
-            setLoading(false)
-            return
-        }
-        try {
-            const [submissionsRes, reviewsRes] = await Promise.all([
-                fetch(`/api/conferences/${selectedConference}/submissions`),
-                fetch(`/api/conferences/${selectedConference}/reviews`)
-            ])
-
-            if (submissionsRes.ok) {
-                const data = await submissionsRes.json()
-                setSubmissions(data)
-            }
-
-            if (reviewsRes.ok) {
-                const data = await reviewsRes.json()
-                setReviews(data)
-            }
-        } catch (err) {
-            console.error('Error fetching data:', err)
-            setError('Unable to load data')
         } finally {
             setLoading(false)
         }
@@ -224,10 +171,6 @@ export function ReviewerPage({ username, userID, onLogout, onBackToMain }: Revie
     const closeModals = () => {
         setShowAccountModal(false)
         setShowSettingsModal(false)
-    }
-
-    const formatFileSize = (bytes: number) => {//I believe this was in the submission page to store the file size in an already formatted form, but since I made it so the array holds the entire submission object, it goes unused. may remove later.
-        return (bytes / 1024).toFixed(2) + 'KB'
     }
 
     const handleShowAccount = () => {

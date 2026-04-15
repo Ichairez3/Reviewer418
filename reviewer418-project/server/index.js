@@ -91,6 +91,10 @@ const conferenceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  paperRequirements: {
+    type: String,
+    default: ''
+  },
   createdBy: {
     type: String,
     required: true
@@ -287,11 +291,17 @@ app.get('/api/users', async (req, res) => {
 // Conference routes
 app.post("/api/conferences", async (req, res) => {
   try {
-    const { name, date, location, createdBy } = req.body;
+    const { name, date, location, paperRequirements, createdBy } = req.body;
     if (!createdBy) {
       return res.status(400).json({ error: 'createdBy username is required' });
     }
-    const conference = new Conference({ name, date, location, createdBy });
+    const conference = new Conference({
+      name,
+      date,
+      location,
+      paperRequirements: paperRequirements || '',
+      createdBy
+    });
     const saved = await conference.save();
     res.status(201).json(saved);
   } catch (error) {
@@ -315,6 +325,39 @@ app.get("/api/conferences/:id", async (req, res) => {
       return res.status(404).json({ error: "Conference not found" });
     }
     res.json(conference);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/api/conferences/:id/requirements", async (req, res) => {
+  try {
+    const { requestedBy, paperRequirements } = req.body;
+
+    if (!requestedBy) {
+      return res.status(400).json({ error: 'requestedBy username is required' });
+    }
+
+    const conference = await Conference.findById(req.params.id);
+    if (!conference) {
+      return res.status(404).json({ error: 'Conference not found' });
+    }
+
+    const requesterConferenceUser = await ConferenceUser.findOne({
+      conference: req.params.id,
+      username: requestedBy
+    });
+
+    const isCreator = conference.createdBy === requestedBy;
+    const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
+
+    if (!isCreator && !isOrganizer) {
+      return res.status(403).json({ error: 'Only the conference owner or organizer can edit paper requirements' });
+    }
+
+    conference.paperRequirements = typeof paperRequirements === 'string' ? paperRequirements : '';
+    const updatedConference = await conference.save();
+    res.json(updatedConference);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

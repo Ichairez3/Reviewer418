@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { LandingPage } from './LandingPage'
 import { Login } from './Login'
 import { RoleSelection } from './RoleSelection'
 import { SubmissionPage } from './SubmissionPage'
@@ -6,7 +7,6 @@ import { ReviewerPage } from './ReviewerPage'
 import { ConferenceList } from './ConferenceList'
 import { ConferenceDetail } from './ConferenceDetail'
 import './App.css'
-import { set } from 'mongoose'
 
 type UserRole = 'submitter' | 'reviewer' | null
 
@@ -15,11 +15,13 @@ interface Conference {
     name: string
     date: string
     location: string
+    paperRequirements?: string
     createdBy?: string
 }
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [showLogin, setShowLogin] = useState(false)
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [userID, setUserID] = useState('')
@@ -44,6 +46,7 @@ function App() {
     const handleLogin = (user: string) => {
         setUsername(user)
         setIsLoggedIn(true)
+        setShowLogin(false)
         localStorage.setItem('username', user)
         const storedEmail = localStorage.getItem('email')
         if (storedEmail) {
@@ -84,16 +87,22 @@ function App() {
 
     const handleLogout = () => {//might not clear emails and ids??
         setIsLoggedIn(false)
+        setShowLogin(false)
         setUsername('')
         setUserRole(null)
         setViewingConferences(false)
+        setSelectedConference(null)
         localStorage.clear()
     }
 
     return (
         <>
             {!isLoggedIn ? (
-                <Login onLogin={handleLogin} />
+                showLogin ? (
+                    <Login onLogin={handleLogin} onBack={() => setShowLogin(false)} />
+                ) : (
+                    <LandingPage onEnterLogin={() => setShowLogin(true)} />
+                )
             ) : viewingConferences ? (
                 selectedConference ? (
                     <ConferenceDetail 
@@ -120,7 +129,6 @@ function App() {
                 <SubmissionPage 
                     username={username}
                     email={email}
-                    onLogout={handleLogout}
                     onBackToMain={handleBackToRoleSelection}
                 />
             ) : (
