@@ -427,6 +427,9 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                             <button className="close-btn" onClick={closeModals}>x</button>
                         </div>
                         <div className="modal-body">
+                            <button className="Temp">
+                                Temp
+                            </button>
                             <p>Settings coming soon...</p>
                         </div>
                     </div>
