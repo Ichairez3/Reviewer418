@@ -204,6 +204,46 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
         setShowSettingsModal(true)
     }
 
+    const handleChangeUsername = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const input = document.getElementById('newUsername') as HTMLInputElement
+        const newUsername = input.value.trim()
+        if (!newUsername || newUsername === username) {
+            setError('Please enter a new username')
+            return
+        }
+        
+        try {
+            const response = await fetch('/api/users')
+            if (response.ok) {
+                const users = await response.json()
+                const usernameExists = users.some((user: { username: string }) => user.username === newUsername)
+                if (usernameExists) {
+                    setError('Username already taken')
+                    return
+                }
+            } else {
+                setError('Failed to validate username')
+                return
+            }
+
+            const updateResponse = await fetch(`/api/users/${userID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: newUsername })
+            })
+            if (!updateResponse.ok) {
+                setError('Failed to update username')
+                return
+            }
+        } catch (err) {
+                console.error('Error updating username:', err)
+                setError('Unable to reach server')
+                return
+            }
+    }
+
+
     const getPaperDownloadUrl = (submission: Submission) => `/api/papers/${submission._id}`
     const canDeleteSubmissions = systemRole === 'owner' || systemRole === 'admin'
 
@@ -427,9 +467,10 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                             <button className="close-btn" onClick={closeModals}>x</button>
                         </div>
                         <div className="modal-body">
-                            <button className="Temp">
-                                Temp
-                            </button>
+                            <form className="change-username" onSubmit={handleChangeUsername}>
+                                <input type='text' placeholder={username} id='newUsername'></input>
+                                <button type='submit'>Change Username</button>
+                            </form>
                             <p>Settings coming soon...</p>
                         </div>
                     </div>
