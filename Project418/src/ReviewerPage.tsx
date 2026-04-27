@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Menu } from './Menu'
 import './ReviewerPage.css'
 import logo from './assets/logo.png'
+import { set } from 'mongoose'
 
 interface ReviewerPageProps {
     username: string
@@ -206,36 +207,49 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
 
     const handleChangeUsername = async (e: React.FormEvent) => {
         e.preventDefault()
-        const input = document.getElementById('newUsername') as HTMLInputElement
-        const newUsername = input.value.trim()
-        if (!newUsername || newUsername === username) {
+        const input = document.getElementById('newUsername') as HTMLInputElement//gets value from html input element
+        const newUsername = input.value.trim()//trims whitespace from input vusername
+        if (!newUsername || newUsername === username) {//makes sure a username is input/that the new username is different from the old username
             setError('Please enter a new username')
             return
         }
         
         try {
+            //start of username already taken check
             const response = await fetch('/api/users')
             if (response.ok) {
                 const users = await response.json()
                 const usernameExists = users.some((user: { username: string }) => user.username === newUsername)
+                
                 if (usernameExists) {
                     setError('Username already taken')
                     return
                 }
+                //end of username already taken check
+
+                //start of username update
+                const updateResponse = await fetch(`/api/users/${userID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username: newUsername
+                })
+                })
+                if (!updateResponse.ok) {
+                    setError(`Failed to update username`)
+                    return
+                }
+                const updatedUser = await updateResponse.json()
+                setError('Username updated to ' + updatedUser.username + '. Please log out and log back in to see changes.')//using error handler for success message. hooray for reuse!
+                //end of username update
+                
             } else {
                 setError('Failed to validate username')
                 return
             }
+            return
 
-            const updateResponse = await fetch(`/api/users/${userID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: newUsername })
-            })
-            if (!updateResponse.ok) {
-                setError('Failed to update username')
-                return
-            }
+            
         } catch (err) {
                 console.error('Error updating username:', err)
                 setError('Unable to reach server')

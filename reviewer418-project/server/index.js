@@ -368,6 +368,33 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+//change username
+app.put('/api/users/:userId', async (req, res) => {
+  try {    
+    const newUsername = req.body.username;
+
+    //check if new username is already taken
+    const usernameExists = await User.findOne({ username: newUsername });
+    if (usernameExists != null) {
+      return res.status(400).json({ error: 'Username already taken' });
+    }
+  
+    //find user by id
+    const user = await User.findOneAndUpdate({ _id: req.params.userId }, { username: newUsername }, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json(user);
+
+
+    
+  } catch (err) {
+    console.error('Error updating username:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Conference routes
 app.post("/api/conferences", async (req, res) => {
   try {
