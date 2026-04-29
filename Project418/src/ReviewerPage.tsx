@@ -110,6 +110,8 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
         }
     }
 
+
+
     const fetchConferences = async () => {
         try {
             const response = await fetch('/api/conferences')
@@ -255,6 +257,33 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                 setError('Unable to reach server')
                 return
             }
+    }
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const input = document.getElementById('newPassword') as HTMLInputElement
+        const newPassword = input.value.trim()
+        if (!newPassword) {
+            setError('Please enter a new password')
+            return
+        } 
+        try {
+            const response = await fetch(`/api/users/${userID}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: newPassword
+                })
+            })
+            if (!response.ok) {
+                setError('Failed to update password')
+                return
+            }
+            setError('Password updated successfully.')
+        } catch (err) {
+            console.error('Error updating password:', err)
+            setError('Unable to reach server')
+        }
     }
 
 
@@ -481,9 +510,13 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                             <button className="close-btn" onClick={closeModals}>x</button>
                         </div>
                         <div className="modal-body">
-                            <form className="change-username" onSubmit={handleChangeUsername}>
+                            <form className="change-username" onSubmit={handleChangeUsername} style={{ marginTop: '20px' }}>
                                 <input type='text' placeholder={username} id='newUsername'></input>
                                 <button type='submit'>Change Username</button>
+                            </form>
+                            <form className="change-password" onSubmit={handleChangePassword} style={{ marginTop: '20px' }}>
+                                <input type='password' placeholder='' id='newPassword'></input>
+                                <button type='submit'>Change Password</button>
                             </form>
                             <p>Settings coming soon...</p>
                         </div>
