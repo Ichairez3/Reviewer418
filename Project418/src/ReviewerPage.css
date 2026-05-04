@@ -106,7 +106,7 @@
 
 .submissions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
 }
 
@@ -123,19 +123,22 @@
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
-.card-header {
+.reviewer-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1rem;
+    min-height: 58px;
 }
 
-.card-header h3 {
+.reviewer-card-header h3 {
     margin: 0;
     color: #333;
     font-size: 1.1rem;
+    line-height: 1.35;
     flex: 1;
+    overflow-wrap: anywhere;
 }
 
 .type-badge {
@@ -159,6 +162,36 @@
     background-color: #ff8c42;
 }
 
+.status-badge {
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.status-badge.pending {
+    background-color: #6c757d;
+}
+
+.status-badge.accepted {
+    background-color: #2f7d32;
+}
+
+.status-badge.rejected {
+    background-color: #c62828;
+}
+
+.status-badge.pending_revision {
+    background-color: #d17b00;
+}
+
+.status-badge.pending_final_approval {
+    background-color: #315f9f;
+}
+
 .submission-card .authors,
 .submission-card .date {
     color: #666;
@@ -167,13 +200,15 @@
 }
 
 .submission-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
     margin-top: 1rem;
 }
 
 .review-btn,
-.download-btn,
+.view-paper-btn,
+.details-btn,
 .delete-submission-btn {
     flex: 1;
     padding: 0.75rem;
@@ -185,6 +220,9 @@
     transition: background-color 0.3s ease, transform 0.2s ease;
     text-align: center;
     text-decoration: none;
+    min-width: 0;
+    min-height: 48px;
+    overflow-wrap: anywhere;
 }
 
 .review-btn {
@@ -197,14 +235,31 @@
     transform: translateY(-1px);
 }
 
-.download-btn {
+.review-btn:disabled {
+    background-color: #8b9882;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.view-paper-btn {
     background-color: #edf4e7;
     color: #36511f;
     border: 1px solid #b9cfa7;
 }
 
-.download-btn:hover {
+.view-paper-btn:hover {
     background-color: #dceacc;
+    transform: translateY(-1px);
+}
+
+.details-btn {
+    background-color: #f4f6f8;
+    color: #333;
+    border: 1px solid #cfd6dd;
+}
+
+.details-btn:hover {
+    background-color: #e8edf2;
     transform: translateY(-1px);
 }
 
@@ -221,6 +276,45 @@
 .delete-submission-btn:disabled {
     opacity: 0.65;
     cursor: not-allowed;
+}
+
+.final-decision-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.final-accept-btn,
+.final-reject-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.final-accept-btn {
+    background-color: #2f7d32;
+}
+
+.final-accept-btn:hover {
+    background-color: #256528;
+    transform: translateY(-1px);
+}
+
+.final-reject-btn {
+    background-color: #c62828;
+}
+
+.final-reject-btn:hover {
+    background-color: #a92121;
+    transform: translateY(-1px);
 }
 
 .reviews-list {
@@ -252,16 +346,6 @@
     flex: 1;
 }
 
-.score {
-    background: #5a873d;
-    color: white;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
 .review-card .authors {
     color: #666;
     font-size: 0.9rem;
@@ -275,6 +359,12 @@
     background: #f9f9f9;
     padding: 1rem;
     border-radius: 4px;
+}
+
+.decision-line {
+    color: #444;
+    font-weight: 600;
+    margin: 0.5rem 0;
 }
 
 .review-card .date {
@@ -334,6 +424,32 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
+.paper-preview-modal {
+    max-width: 1000px;
+    height: 86vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.paper-preview-frame {
+    width: 100%;
+    flex: 1;
+    border: 0;
+    border-radius: 0 0 8px 8px;
+    background: #f4f4f4;
+}
+
+.paper-preview-message {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 1rem;
+    background: #f4f4f4;
+    border-radius: 0 0 8px 8px;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -369,8 +485,86 @@
     color: #555;
 }
 
+.paper-comments-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.paper-comments-section h4 {
+    margin: 0 0 1rem;
+    color: #333;
+}
+
+.paper-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.paper-comment-item {
+    background: #f9f9f9;
+    border-left: 4px solid #5a873d;
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.paper-comment-item .comments {
+    color: #555;
+    line-height: 1.6;
+    margin: 0.75rem 0;
+}
+
+.paper-comment-item .date {
+    color: #999;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
 .review-form {
     padding: 1.5rem;
+}
+
+.decision-button-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.decision-btn {
+    min-height: 44px;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.decision-btn:hover {
+    transform: translateY(-1px);
+}
+
+.decision-btn.accept.active {
+    background: #2f7d32;
+    border-color: #2f7d32;
+    color: white;
+}
+
+.decision-btn.revision.active {
+    background: #d17b00;
+    border-color: #d17b00;
+    color: white;
+}
+
+.decision-btn.reject.active {
+    background: #c62828;
+    border-color: #c62828;
+    color: white;
 }
 
 .form-group {
@@ -385,6 +579,7 @@
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
     width: 100%;
     padding: 0.75rem;
@@ -396,6 +591,7 @@
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
     outline: none;
     border-color: #5a873d;
@@ -518,6 +714,10 @@
     }
 
     .submission-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .final-decision-actions {
         flex-direction: column;
     }
 
@@ -527,5 +727,9 @@
 
     .tab {
         border-radius: 4px;
+    }
+
+    .decision-button-group {
+        grid-template-columns: 1fr;
     }
 }

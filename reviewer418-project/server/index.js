@@ -485,14 +485,17 @@ app.put("/api/conferences/:id/requirements", async (req, res) => {
       username: requestedBy
     });
 
-    const requesterIsSystemOwner = await isSystemOwner(requestedBy);
+    const requesterIsSystemAdmin = await isSystemAdmin(requestedBy);
     const isCreator = conference.createdBy === requestedBy;
     const isOrganizer = requesterConferenceUser && requesterConferenceUser.roles.includes('organizer');
 
-    if (!requesterIsSystemOwner && !isCreator && !isOrganizer) {
-      return res.status(403).json({ error: 'Only the conference owner or organizer can edit paper requirements' });
+    if (!requesterIsSystemAdmin && !isCreator && !isOrganizer) {
+      return res.status(403).json({ error: 'Only the system owner/admin, conference owner, or organizer can edit paper requirements' });
     }
 
+    if (!conference.createdBy) {
+      conference.createdBy = requestedBy;
+    }
     conference.paperRequirements = typeof paperRequirements === 'string' ? paperRequirements : '';
     const updatedConference = await conference.save();
     res.json(updatedConference);

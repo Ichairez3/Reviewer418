@@ -163,6 +163,39 @@
     background-color: #ff8c42;
 }
 
+.submission-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.status-badge.pending {
+    background-color: #6c757d;
+}
+
+.status-badge.accepted {
+    background-color: #2f7d32;
+}
+
+.status-badge.rejected {
+    background-color: #c62828;
+}
+
+.status-badge.pending_revision {
+    background-color: #d17b00;
+}
+
 .submission-item .authors {
     color: #555;
     margin: 0.5rem 0;
@@ -291,6 +324,10 @@
 
 .role-badge.submitter {
     background-color: #51cf66;
+}
+
+.role-badge.reviewer-priority {
+    background-color: #315f9f;
 }
 
 .user-item .added-date {

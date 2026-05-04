@@ -1,5 +1,10 @@
 import { useState } from 'react'
 import './Menu.css'
+import {
+    cancelReviewerPriorityRequest,
+    hasReviewerRequest,
+    requestReviewerPriority,
+} from './reviewerRequests'
 
 interface MenuProps {
     username: string
@@ -10,6 +15,7 @@ interface MenuProps {
 
 export function Menu({ username, onShowPreviousSubmissions, onShowAccount, onShowSettings }: MenuProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const [hasRequestedReviewerPriority, setHasRequestedReviewerPriority] = useState(() => hasReviewerRequest(username))
 
     const handleMenuToggle = () => {
         setIsOpen(!isOpen)
@@ -23,6 +29,17 @@ export function Menu({ username, onShowPreviousSubmissions, onShowAccount, onSho
     const handleAccount = () => {
         onShowAccount()
         setIsOpen(false)
+    }
+
+    const handleReviewerRequest = () => {
+        if (hasRequestedReviewerPriority) {
+            cancelReviewerPriorityRequest(username)
+            setHasRequestedReviewerPriority(false)
+            return
+        }
+
+        requestReviewerPriority(username)
+        setHasRequestedReviewerPriority(true)
     }
 
     const handleSettings = () => {
@@ -60,6 +77,12 @@ export function Menu({ username, onShowPreviousSubmissions, onShowAccount, onSho
                         onClick={handleAccount}
                     >
                         Account
+                    </button>
+                    <button
+                        className={`dropdown-item reviewer-request-item ${hasRequestedReviewerPriority ? 'active' : ''}`}
+                        onClick={handleReviewerRequest}
+                    >
+                        {hasRequestedReviewerPriority ? 'Reviewer Request Sent' : 'Request to be Reviewer'}
                     </button>
                     {onShowSettings && (
                         <button
