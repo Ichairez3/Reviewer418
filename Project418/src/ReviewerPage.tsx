@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Menu } from './Menu'
 import './ReviewerPage.css'
 import logo from './assets/logo.png'
 import { set } from 'mongoose'
@@ -973,39 +972,6 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                                     </div>
                                 )}
                             </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showAccountModal && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Account Information</h3>
-                            <button className="close-btn" onClick={closeModals}>x</button>
-                        </div>
-                        <div className="modal-body">
-                            <p><strong>Username:</strong> {username}</p>
-                            <p><strong>Role:</strong> Reviewer</p>
-                            <p><strong>Total Reviews:</strong> {reviews.length}</p>
-                            <button className="logout-btn" onClick={onLogout}>
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showSettingsModal && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Settings</h3>
-                            <button className="close-btn" onClick={closeModals}>x</button>
-                        </div>
-                        <div className="modal-body">
-                            <p>Settings coming soon...</p>
                         </div>
                     </div>
                 </div>
