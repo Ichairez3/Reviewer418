@@ -368,6 +368,66 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+// Get user by ID
+app.get('/api/users/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId, { username: 1, _id: 1, email: 1, systemRole: 1, password: 1 });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    return res.json(user);
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+//change username
+app.put('/api/users/:userId', async (req, res) => {
+  try {    
+    const newUsername = req.body.username;
+
+    //check if new username is already taken
+    const usernameExists = await User.findOne({ username: newUsername });
+    if (usernameExists != null) {
+      return res.status(400).json({ error: 'Username already taken' });
+    }
+  
+    //find user by id
+    const user = await User.findOneAndUpdate({ _id: req.params.userId }, { username: newUsername }, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json(user);
+
+
+    
+  } catch (err) {
+    console.error('Error updating username:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+//change password
+app.put('/api/users/:userId/password', async (req, res) => {
+  try {
+    const newPassword = req.body.password;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const user = await User.findOneAndUpdate({ _id: req.params.userId }, { password: hashedPassword }, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json(user);
+
+  } catch (err) {
+    console.error('Error updating password:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Conference routes
 app.post("/api/conferences", async (req, res) => {
   try {

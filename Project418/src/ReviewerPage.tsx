@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Menu } from './Menu'
 import './ReviewerPage.css'
 import logo from './assets/logo.png'
+import { set } from 'mongoose'
 
 interface ReviewerPageProps {
     username: string
@@ -455,6 +456,86 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
         setShowSettingsModal(true)
     }
 
+    const handleChangeUsername = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const input = document.getElementById('newUsername') as HTMLInputElement//gets value from html input element
+        const newUsername = input.value.trim()//trims whitespace from input vusername
+        if (!newUsername || newUsername === username) {//makes sure a username is input/that the new username is different from the old username
+            setError('Please enter a new username')
+            return
+        }
+        
+        try {
+            //start of username already taken check
+            const response = await fetch('/api/users')
+            if (response.ok) {
+                const users = await response.json()
+                const usernameExists = users.some((user: { username: string }) => user.username === newUsername)
+                
+                if (usernameExists) {
+                    setError('Username already taken')
+                    return
+                }
+                //end of username already taken check
+
+                //start of username update
+                const updateResponse = await fetch(`/api/users/${userID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username: newUsername
+                })
+                })
+                if (!updateResponse.ok) {
+                    setError(`Failed to update username`)
+                    return
+                }
+                const updatedUser = await updateResponse.json()
+                setError('Username updated to ' + updatedUser.username + '. Please log out and log back in to see changes.')//using error handler for success message. hooray for reuse!
+                //end of username update
+                
+            } else {
+                setError('Failed to validate username')
+                return
+            }
+            return
+
+            
+        } catch (err) {
+                console.error('Error updating username:', err)
+                setError('Unable to reach server')
+                return
+            }
+    }
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const input = document.getElementById('newPassword') as HTMLInputElement
+        const newPassword = input.value.trim()
+        if (!newPassword) {
+            setError('Please enter a new password')
+            return
+        } 
+        try {
+            const response = await fetch(`/api/users/${userID}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: newPassword
+                })
+            })
+            if (!response.ok) {
+                setError('Failed to update password')
+                return
+            }
+            setError('Password updated successfully.')
+        } catch (err) {
+            console.error('Error updating password:', err)
+            setError('Unable to reach server')
+        }
+    }
+
+
     const getPaperDownloadUrl = (submission: Submission) => `/api/papers/${submission._id}`
     const isSystemAdmin = systemRole === 'owner' || systemRole === 'admin'
     const canDeleteSubmissions = isSystemAdmin
@@ -520,14 +601,6 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                         title="Click to change role"
                     />
                     <h1>Reviewer418</h1>
-                </div>
-                <div className="header-actions">
-                    <Menu
-                        username={username}
-                        onShowPreviousSubmissions={() => setActiveTab('completed')}
-                        onShowAccount={handleShowAccount}
-                        onShowSettings={handleShowSettings}
-                    />
                 </div>
             </div>
 

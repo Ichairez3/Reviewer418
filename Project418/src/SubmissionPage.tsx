@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Menu } from './Menu'
 import './SubmissionPage.css'
 import logo from './assets/logo.png'
 import { loadReviewerRequests } from './reviewerRequests'
@@ -51,8 +50,6 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
     const [conferences, setConferences] = useState<Conference[]>([])
     const [isVerifying, setIsVerifying] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
-    const [showAccountModal, setShowAccountModal] = useState(false)
-    const [showSettingsModal, setShowSettingsModal] = useState(false)
     const [activeTab, setActiveTab] = useState<'submit' | 'history'>('submit')
     const [submissionHistory, setSubmissionHistory] = useState<Array<{//thinking about applying the changes I made in the reviewer page code.
         id: string
@@ -273,18 +270,6 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
         .map((line) => line.trim())
         .filter(Boolean) ?? []
 
-    const handleShowAccount = () => {
-        setShowAccountModal(true)
-    }
-
-    const handleShowSettings = () => {
-        setShowSettingsModal(true)
-    }
-
-    const closeModals = () => {
-        setShowAccountModal(false)
-        setShowSettingsModal(false)
-    }
 
     return (
         <div className="submission-container">
@@ -299,14 +284,6 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
                         title="Click to change role"
                     />
                     <h1>Submission Portal</h1>
-                </div>
-                <div className="header-actions">
-                    <Menu 
-                        username={username}
-                        onShowPreviousSubmissions={() => setActiveTab('history')}
-                        onShowAccount={handleShowAccount}
-                        onShowSettings={handleShowSettings}
-                    />
                 </div>
             </div>
 
@@ -502,56 +479,6 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
                 accept=".pdf, .doc, .docx, .txt"
             />
 
-            {/* Account Modal */}
-            {showAccountModal && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Account Information</h3>
-                            <button className="close-btn" onClick={closeModals}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="account-info-item">
-                                <span className="account-label">Username:</span>
-                                <span className="account-value">{username}</span>
-                            </div>
-                            <div className="account-info-item">
-                                <span className="account-label">Email:</span>
-                                <span className="account-value">{email}</span>
-                            </div>
-                            <div className="account-info-item">
-                                <span className="account-label">Total Submissions:</span>
-                                <span className="account-value">{submissionHistory.length}</span>
-                            </div>
-                            <div className="account-info-item">
-                                <span className="account-label">Last Submission:</span>
-                                <span className="account-value">
-                                    {submissionHistory.length > 0 
-                                        ? submissionHistory[0].timestamp 
-                                        : 'No submissions yet'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Settings Modal */}
-            {showSettingsModal && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Settings</h3>
-                            <button className="close-btn" onClick={closeModals}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="settings-section">
-                                <p>Settings coming soon...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }
