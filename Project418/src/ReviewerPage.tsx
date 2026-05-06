@@ -308,14 +308,6 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                     />
                     <h1>Reviewer418</h1>
                 </div>
-                <div className="header-actions">
-                    <Menu
-                        username={username}
-                        onShowPreviousSubmissions={() => setActiveTab('completed')}
-                        onShowAccount={handleShowAccount}
-                        onShowSettings={handleShowSettings}
-                    />
-                </div>
             </div>
 
             {error && <div className="error-message">{error}</div>}
@@ -483,46 +475,6 @@ export function ReviewerPage({ username, userID, systemRole, onLogout, onBackToM
                 </div>
             )}
 
-            {showAccountModal && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Account Information</h3>
-                            <button className="close-btn" onClick={closeModals}>x</button>
-                        </div>
-                        <div className="modal-body">
-                            <p><strong>Username:</strong> {username}</p>
-                            <p><strong>Role:</strong> Reviewer</p>
-                            <p><strong>Total Reviews:</strong> {reviews.length}</p>
-                            <button className="logout-btn" onClick={onLogout}>
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showSettingsModal && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Settings</h3>
-                            <button className="close-btn" onClick={closeModals}>x</button>
-                        </div>
-                        <div className="modal-body">
-                            <form className="change-username" onSubmit={handleChangeUsername} style={{ marginTop: '20px' }}>
-                                <input type='text' placeholder={username} id='newUsername'></input>
-                                <button type='submit'>Change Username</button>
-                            </form>
-                            <form className="change-password" onSubmit={handleChangePassword} style={{ marginTop: '20px' }}>
-                                <input type='password' placeholder='' id='newPassword'></input>
-                                <button type='submit'>Change Password</button>
-                            </form>
-                            <p>Settings coming soon...</p>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

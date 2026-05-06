@@ -3,12 +3,13 @@ import './Menu.css'
 
 interface MenuProps {
     username: string
+    email:string
     onShowPreviousSubmissions: () => void
     onShowAccount: () => void
     onShowSettings?: () => void
 }
 
-export function Menu({ username, onShowPreviousSubmissions, onShowAccount, onShowSettings }: MenuProps) {
+export function Menu({ username, email, onShowPreviousSubmissions, onShowAccount, onShowSettings }: MenuProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     const handleMenuToggle = () => {

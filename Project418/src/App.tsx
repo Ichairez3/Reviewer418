@@ -7,6 +7,7 @@ import { SubmissionPage } from './SubmissionPage'
 import { ReviewerPage } from './ReviewerPage'
 import { ConferenceList } from './ConferenceList'
 import { ConferenceDetail } from './ConferenceDetail'
+import { MenuSettings } from './MenuSettings'
 import './App.css'
 
 type UserRole = 'submitter' | 'reviewer' | 'admin' | null
@@ -31,6 +32,9 @@ function App() {
     const [userRole, setUserRole] = useState<UserRole>(null)
     const [viewingConferences, setViewingConferences] = useState(false)
     const [selectedConference, setSelectedConference] = useState<Conference | null>(null)
+    const [showAccountModal, setShowAccountModal] = useState(false)
+    const [showSettingsModal, setShowSettingsModal] = useState(false)
+    const [activeTab, setActiveTab] = useState<'available' | 'completed'>('available')
 
     useEffect(() => {
         const storedUsername = localStorage.getItem('username')
@@ -103,11 +107,36 @@ function App() {
         localStorage.clear()
     }
 
+    //hamburger menu
+    const closeModals = () => {
+        setShowAccountModal(false)
+        setShowSettingsModal(false)
+    }
+
+    const handleShowAccount = () => {
+        setShowAccountModal(true)
+    }
+
+    const handleShowSettings = () => {
+        setShowSettingsModal(true)
+    }
+
     const showSystemRoleBadge = isLoggedIn && systemRole !== 'user'
     const systemRoleLabel = systemRole === 'owner' ? 'Owner Account' : 'Admin Account'
 
     return (
         <>
+            <div className="header-actions">
+                {isLoggedIn && (
+                    <MenuSettings
+                    username={username}
+                    email={email}
+                    userID={userID}
+                    onLogout={handleLogout}
+                    />)}
+                
+            </div>
+            
             {showSystemRoleBadge && (
                 <div className={`system-role-indicator ${systemRole}`}>
                     <span className="system-role-dot"></span>
