@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './SubmissionPage.css'
 import logo from './assets/logo.png'
+import { loadReviewerRequests } from './reviewerRequests'
 
 interface SubmissionPageProps {
     username: string
@@ -23,6 +24,24 @@ interface Submission {
     fileSize: number
     uploadedAt: string
     submitterEmail: string
+    conferenceId?: string
+    status?: 'pending' | 'accepted' | 'rejected' | 'pending_revision' | 'pending_final_approval'
+    revisionDeadline?: string
+}
+
+type PaperStatus = 'pending' | 'accepted' | 'rejected' | 'pending_revision' | 'pending_final_approval'
+type PaperStatusOverride = {
+    status: PaperStatus
+    revisionDeadline?: string
+}
+
+const PAPER_STATUS_OVERRIDES_KEY = 'reviewer418PaperStatusOverrides'
+
+interface ConferenceUser {
+    userId: string
+    username: string
+    role?: 'organizer' | 'reviewer' | 'submitter'
+    roles?: Array<'organizer' | 'reviewer' | 'submitter'>
 }
 
 export function SubmissionPage({ username, email, onBackToMain }: SubmissionPageProps) {
@@ -37,6 +56,8 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
         filename: string
         size: string
         timestamp: string
+        status: PaperStatus
+        revisionDeadline?: string
     }>>([])
     const [isDownloading, setIsDownloading] = useState<string | null>(null)
 
@@ -59,6 +80,9 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
             if (response.ok) {
                 const data = await response.json()
                 setConferences(data)
+                if (data.length === 1) {
+                    setSelectedConference(data[0]._id)
+                }
             }
         } catch (err) {
             console.error('Failed to fetch conferences:', err)
@@ -73,9 +97,14 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
         if (!selectedFile) return
 
         try {
+            const assignedReviewers = await pickRandomReviewers(selectedConference)
             const formData = new FormData()
             formData.append('file', selectedFile)
             formData.append('email', email)
+            formData.append('conferenceId', selectedConference)
+            formData.append('status', 'pending')
+            formData.append('assignedReviewerIds', JSON.stringify(assignedReviewers.map((reviewer) => reviewer.userId)))
+            formData.append('assignedReviewers', JSON.stringify(assignedReviewers.map((reviewer) => reviewer.username)))
 
             const response = await fetch('/api/papers', {
                 method: 'POST',
@@ -91,6 +120,7 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
                     filename: data.fileName || selectedFile.name,
                     size: formatFileSize(selectedFile.size),
                     timestamp: new Date().toLocaleString(),
+                    status: data.status || 'pending',
                 }
 
                 setSubmissionHistory([newSubmission, ...submissionHistory])
@@ -110,22 +140,85 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
         }
     }
 
+    const pickRandomReviewers = async (conferenceId: string) => {
+        if (!conferenceId) {
+            return []
+        }
+
+        try {
+            const response = await fetch(`/api/conferences/${conferenceId}/users`)
+            if (!response.ok) {
+                return []
+            }
+
+            const conferenceUsers: ConferenceUser[] = await response.json()
+            const reviewers = conferenceUsers.filter((user) => {
+                const roles = user.roles || (user.role ? [user.role] : [])
+                return roles.includes('reviewer') && user.username !== username
+            })
+
+            return pickWeightedReviewers(reviewers, 3)
+        } catch (err) {
+            console.error('Failed to assign random reviewers:', err)
+            return []
+        }
+    }
+
+    const pickWeightedReviewers = (reviewers: ConferenceUser[], count: number) => {
+        const requestedReviewers = new Set(loadReviewerRequests().map((request) => request.username))
+        const selectedReviewers: ConferenceUser[] = []
+        const remainingReviewers = [...reviewers]
+
+        while (selectedReviewers.length < count && remainingReviewers.length > 0) {
+            const weightedPool = remainingReviewers.flatMap((reviewer) => {
+                const weight = requestedReviewers.has(reviewer.username) ? 3 : 1
+                return Array.from({ length: weight }, () => reviewer)
+            })
+            const pickedReviewer = weightedPool[Math.floor(Math.random() * weightedPool.length)]
+
+            selectedReviewers.push(pickedReviewer)
+            const pickedIndex = remainingReviewers.findIndex((reviewer) =>
+                reviewer.userId === pickedReviewer.userId || reviewer.username === pickedReviewer.username
+            )
+            if (pickedIndex >= 0) {
+                remainingReviewers.splice(pickedIndex, 1)
+            }
+        }
+
+        return selectedReviewers
+    }
+
     const fetchSubmissions = async () => {
         try {
             const response = await fetch('/api/papers')
             if (response.ok) {
                 const papers = await response.json()
+                const statusOverrides = loadPaperStatusOverrides()
                 const userPapers = papers.filter((paper: Submission) => paper.submitterEmail === email)
-                const formatted = userPapers.map((paper: Submission) => ({
-                    id: paper._id,
-                    filename: paper.originalName,
-                    size: formatFileSize(paper.fileSize),
-                    timestamp: new Date(paper.uploadedAt).toLocaleString(),
-                }))
+                const formatted = userPapers.map((paper: Submission) => {
+                    const override = statusOverrides[paper._id]
+                    return {
+                        id: paper._id,
+                        filename: paper.originalName,
+                        size: formatFileSize(paper.fileSize),
+                        timestamp: new Date(paper.uploadedAt).toLocaleString(),
+                        status: override?.status || paper.status || 'pending',
+                        revisionDeadline: override?.revisionDeadline || paper.revisionDeadline,
+                    }
+                })
                 setSubmissionHistory(formatted)
             }
         } catch (err) {
             console.error('Failed to fetch submissions:', err)
+        }
+    }
+
+    const loadPaperStatusOverrides = (): Record<string, PaperStatusOverride> => {
+        try {
+            return JSON.parse(localStorage.getItem(PAPER_STATUS_OVERRIDES_KEY) || '{}')
+        } catch (err) {
+            console.error('Failed to load paper status overrides:', err)
+            return {}
         }
     }
 
@@ -222,25 +315,28 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
                                     <h2>Upload Your Paper</h2>
                                     <p>Select a PDF, DOC, DOCX, or TXT file to submit</p>
                                     
-                                    <div className="conference-selector">
-                                        <label htmlFor="conference">Select Conference</label>
-                                        <select 
-                                            id="conference"
-                                            value={selectedConference}
-                                            onChange={(e) => setSelectedConference(e.target.value)}
-                                            required
-                                        >
-                                            <option value="">-- Choose a conference --</option>
-                                            {conferences.map((conf) => (
-                                                <option key={conf._id} value={conf._id}>
-                                                    {conf.name} ({new Date(conf.date).toLocaleDateString()})
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {conferences.length === 0 && (
+                                    {conferences.length > 1 ? (
+                                        <div className="conference-selector">
+                                            <label htmlFor="conference">Select Conference</label>
+                                            <select
+                                                id="conference"
+                                                value={selectedConference}
+                                                onChange={(e) => setSelectedConference(e.target.value)}
+                                                required
+                                            >
+                                                <option value="">-- Choose a conference --</option>
+                                                {conferences.map((conf) => (
+                                                    <option key={conf._id} value={conf._id}>
+                                                        {conf.name} ({new Date(conf.date).toLocaleDateString()})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : conferences.length === 0 ? (
+                                        <div className="conference-selector">
                                             <p className="no-conferences-message">No conferences available</p>
-                                        )}
-                                    </div>
+                                        </div>
+                                    ) : null}
 
                                     {selectedConference && (
                                         <div className="file-details">
@@ -345,6 +441,9 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
                                     <div key={submission.id} className="submission-card">
                                         <div className="card-header">
                                             <h3>{submission.filename}</h3>
+                                            <span className={`status-badge ${submission.status}`}>
+                                                {submission.status.replace('_', ' ')}
+                                            </span>
                                         </div>
                                         <p className="card-meta">
                                             <strong>Size:</strong> {submission.size}
@@ -352,6 +451,11 @@ export function SubmissionPage({ username, email, onBackToMain }: SubmissionPage
                                         <p className="card-meta">
                                             <strong>Submitted:</strong> {submission.timestamp}
                                         </p>
+                                        {submission.revisionDeadline && (
+                                            <p className="card-meta">
+                                                <strong>Revision Due:</strong> {new Date(submission.revisionDeadline).toLocaleDateString()}
+                                            </p>
+                                        )}
                                         <button 
                                             className="download-btn"
                                             onClick={() => handleDownload(submission.id, submission.filename)}

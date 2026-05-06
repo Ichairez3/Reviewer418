@@ -108,6 +108,15 @@
     background-color: #e8f4e0;
 }
 
+.reviewer-request-item.active {
+    color: #315f9f;
+    font-weight: 600;
+}
+
+.reviewer-request-item.active::after {
+    content: " ✓";
+}
+
 .dropdown-item:active {
     background-color: #d4e8c8;
 }

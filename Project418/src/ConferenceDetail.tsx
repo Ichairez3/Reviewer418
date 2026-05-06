@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ReviewPanel } from './ReviewPanel'
 import './ConferenceDetail.css'
 import logo from './assets/logo.png'
+import { loadReviewerRequests, type ReviewerRequest } from './reviewerRequests'
 
 interface Conference {
     _id: string
@@ -19,6 +20,7 @@ interface Submission {
     type: 'Paper' | 'Poster' | 'Workshop'
     userId: { username: string }
     submittedAt: string
+    status?: 'pending' | 'accepted' | 'rejected' | 'pending_revision'
 }
 
 interface ConferenceUser {
@@ -40,6 +42,7 @@ interface ConferenceDetailProps {
 export function ConferenceDetail({ conference, username, systemRole, onBack }: ConferenceDetailProps) {
     const [submissions, setSubmissions] = useState<Submission[]>([])
     const [conferenceUsers, setConferenceUsers] = useState<ConferenceUser[]>([])
+    const [reviewerRequests, setReviewerRequests] = useState<ReviewerRequest[]>([])
     const [availableUsers, setAvailableUsers] = useState<Array<{ id: string; username: string }>>([]
     )
     const [loading, setLoading] = useState(true)
@@ -76,6 +79,7 @@ export function ConferenceDetail({ conference, username, systemRole, onBack }: C
                     fetchConferenceUsers(),
                     fetchAvailableUsers()
                 ])
+                setReviewerRequests(loadReviewerRequests())
             } catch (err) {
                 console.error('Error fetching data:', err)
             } finally {
@@ -311,6 +315,11 @@ export function ConferenceDetail({ conference, username, systemRole, onBack }: C
     const isSystemAdmin = systemRole === 'owner' || systemRole === 'admin'
     const canManageUsers = isSystemAdmin || isConferenceCreator || isOrganizer
     const canEditRequirements = isSystemAdmin || isConferenceCreator || isOrganizer
+    const canViewAllSubmissions = isSystemAdmin || isConferenceCreator || isOrganizer
+    const visibleSubmissions = canViewAllSubmissions
+        ? submissions
+        : submissions.filter((submission) => submission.userId.username === username)
+    const requestedReviewerUsernames = new Set(reviewerRequests.map((request) => request.username))
 
     const handleSaveRequirements = async () => {
         setIsSavingRequirements(true)
@@ -470,13 +479,13 @@ export function ConferenceDetail({ conference, username, systemRole, onBack }: C
             {activeTab === 'submissions' && (
                 <div className="submissions-section">
                     <h2>Submissions</h2>
-                    {submissions.length === 0 ? (
+                    {visibleSubmissions.length === 0 ? (
                         <div className="no-submissions">
                             <p>No submissions yet</p>
                         </div>
                     ) : (
                         <div className="submissions-list">
-                            {submissions.map((sub) => (
+                            {visibleSubmissions.map((sub) => (
                                 <div 
                                     key={sub._id} 
                                     className="submission-item"
@@ -484,11 +493,17 @@ export function ConferenceDetail({ conference, username, systemRole, onBack }: C
                                 >
                                     <div className="submission-header">
                                         <h3>{sub.title}</h3>
-                                        <span className={`type-badge ${sub.type.toLowerCase()}`}>{sub.type}</span>
+                                        <div className="submission-badges">
+                                            <span className={`type-badge ${sub.type.toLowerCase()}`}>{sub.type}</span>
+                                            <span className={`status-badge ${sub.status || 'pending'}`}>
+                                                {(sub.status || 'pending').replace('_', ' ')}
+                                            </span>
+                                        </div>
                                     </div>
                                     <p className="authors">By: {sub.authors}</p>
                                     <p className="submitter">Submitted by: {sub.userId.username}</p>
                                     <p className="date">{new Date(sub.submittedAt).toLocaleDateString()}</p>
+                                    {canViewAllSubmissions && (
                                     <button 
                                         className="view-reviews-btn"
                                         onClick={(e) => {
@@ -498,6 +513,7 @@ export function ConferenceDetail({ conference, username, systemRole, onBack }: C
                                     >
                                         View Reviews →
                                     </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -574,6 +590,9 @@ export function ConferenceDetail({ conference, username, systemRole, onBack }: C
                                             {(user.roles || (user.role ? [user.role] : [])).map((role) => (
                                                 <span key={role} className={`role-badge ${role}`}>{role}</span>
                                             ))}
+                                            {requestedReviewerUsernames.has(user.username) && (
+                                                <span className="role-badge reviewer-priority">priority requested</span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="user-item-actions">

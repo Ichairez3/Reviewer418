@@ -272,6 +272,10 @@
 
 .submission-card .card-header {
     margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
 }
 
 .submission-card h3 {
@@ -279,6 +283,36 @@
     color: #333;
     font-size: 1.1rem;
     word-break: break-word;
+}
+
+.status-badge {
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.status-badge.pending {
+    background-color: #6c757d;
+}
+
+.status-badge.accepted {
+    background-color: #2f7d32;
+}
+
+.status-badge.rejected {
+    background-color: #c62828;
+}
+
+.status-badge.pending_revision {
+    background-color: #d17b00;
+}
+
+.status-badge.pending_final_approval {
+    background-color: #315f9f;
 }
 
 .submission-card .card-meta {
